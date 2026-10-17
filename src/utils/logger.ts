@@ -1,11 +1,5 @@
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
-const LOG_LEVEL_VALUES: Record<LogLevel, number> = {
-  debug: 0,
-  info: 1,
-  warn: 2,
-  error: 3,
-};
+import { LOG_LEVEL_VALUES } from '@/constants/logger.constants';
+import type { LogLevel } from '@/types/logger.types';
 
 const isLogLevel = (value: string): value is LogLevel => value in LOG_LEVEL_VALUES;
 

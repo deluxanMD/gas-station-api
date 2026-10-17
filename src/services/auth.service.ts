@@ -1,18 +1,23 @@
 import argon2 from 'argon2';
+import { PG_UNIQUE_VIOLATION } from '@/constants/database.constants';
 import { pool } from '@/config/database';
+import type { RegisterInput } from '@/types/auth.types';
 import { httpError } from '@/utils/httpError';
 
-const UNIQUE_VIOLATION = '23505';
-
-export const registerUser = async (userId: string, password: string): Promise<void> => {
+export const registerUser = async ({
+  userId,
+  password,
+  updatedAt,
+  updatedBy,
+}: RegisterInput): Promise<void> => {
   const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
   try {
-    await pool.query('INSERT INTO users (user_id, password_hash) VALUES ($1, $2)', [
-      userId,
-      passwordHash,
-    ]);
+    await pool.query(
+      'INSERT INTO users (user_id, password_hash, updated_at, updated_by) VALUES ($1, $2, $3, $4)',
+      [userId, passwordHash, updatedAt ?? null, updatedBy ?? null],
+    );
   } catch (error) {
-    if ((error as { code?: string }).code === UNIQUE_VIOLATION) {
+    if ((error as { code?: string }).code === PG_UNIQUE_VIOLATION) {
       throw httpError(409, 'User ID is already taken');
     }
     throw error;

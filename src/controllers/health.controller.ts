@@ -1,14 +1,7 @@
 import type { Request, Response } from 'express';
 import { env } from '@/config/env';
 import { isDatabaseReady } from '@/config/database';
-
-interface HealthStatus {
-  status: 'ok' | 'degraded' | 'error';
-  timestamp: string;
-  version: string;
-  environment: string;
-  uptime: number;
-}
+import type { HealthStatus } from '@/types/health.types';
 
 export const getHealth = (_req: Request, res: Response): void => {
   const health: HealthStatus = {

@@ -20,8 +20,8 @@ export const connectDatabase = async (): Promise<void> => {
         user_id       VARCHAR(50) PRIMARY KEY,
         password_hash TEXT        NOT NULL,
         created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_by    VARCHAR(50) NOT NULL
+        updated_at    TIMESTAMPTZ,
+        updated_by    VARCHAR(50)
       )
     `);
     logger.info('Connected to Postgres');

@@ -9,7 +9,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) throw validationError(parsed.error);
 
-    await registerUser(parsed.data.userId, parsed.data.password);
+    await registerUser(parsed.data);
     res.status(201).json({
       status: 'success',
       data: { userId: parsed.data.userId },
