@@ -1,5 +1,8 @@
 import type { Request, Response } from 'express';
+import { isDatabaseReady } from '@/config/database';
 import { getHealth, getLiveness, getReadiness } from '@/controllers/health.controller';
+
+jest.mock('@/config/database', () => ({ isDatabaseReady: jest.fn() }));
 
 const mockRequest = (): Request => ({}) as Request;
 
@@ -44,14 +47,24 @@ describe('Health Controller', () => {
   });
 
   describe('getReadiness', () => {
-    it('should return 200 with ready status', () => {
-      const req = mockRequest();
+    it('should return 200 when the database is reachable', async () => {
+      (isDatabaseReady as jest.Mock).mockResolvedValue(true);
       const res = mockResponse();
 
-      getReadiness(req, res);
+      await getReadiness(mockRequest(), res);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ status: 'ready' });
+      expect(res.json).toHaveBeenCalledWith({ status: 'ready', database: true });
+    });
+
+    it('should return 503 when the database is unreachable', async () => {
+      (isDatabaseReady as jest.Mock).mockResolvedValue(false);
+      const res = mockResponse();
+
+      await getReadiness(mockRequest(), res);
+
+      expect(res.status).toHaveBeenCalledWith(503);
+      expect(res.json).toHaveBeenCalledWith({ status: 'not_ready', database: false });
     });
   });
 
