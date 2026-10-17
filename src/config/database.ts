@@ -15,7 +15,13 @@ export const connectDatabase = async (): Promise<void> => {
   }
   const client = await pool.connect();
   try {
-    await client.query('SELECT 1');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        user_id       VARCHAR(50) PRIMARY KEY,
+        password_hash TEXT        NOT NULL,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
     logger.info('Connected to Postgres');
   } finally {
     client.release();
