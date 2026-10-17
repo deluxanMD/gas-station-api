@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+echo "━━━ pre-push ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Run full test suite before pushing
+echo "→ Running tests..."
+npm run test
+
+# Verify the project builds without errors
+echo "→ Verifying production build..."
+npm run build
+
+echo "✓ pre-push passed — safe to push"

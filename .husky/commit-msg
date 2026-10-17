@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+# Enforce Conventional Commits format:
+#   <type>(<scope>): <subject>
+#
+#   Types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert, wip
+#   Examples:
+#     feat(auth): add jwt authentication middleware
+#     fix(api): handle null response from payment gateway
+#     docs: update environment variable reference in readme
+#     chore(deps): upgrade express to v5
+
+npx --no -- commitlint --edit "$1"

@@ -1,0 +1,65 @@
+{
+  "name": "gas-station-api",
+  "version": "1.0.0",
+  "description": "Gas Station Portal REST API",
+  "main": "dist/server.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "start:prod": "NODE_ENV=production node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,mjs,js,cjs}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@eslint/js": "^9.15.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.9.1",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.15.0"
+  }
+}

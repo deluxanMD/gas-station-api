@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+echo "━━━ pre-commit ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Run lint-staged (ESLint + Prettier on staged files only)
+echo "→ Running lint-staged..."
+npx lint-staged
+
+# TypeScript type-check across the whole project
+echo "→ Running TypeScript type check..."
+npm run type-check
+
+echo "✓ pre-commit passed"
