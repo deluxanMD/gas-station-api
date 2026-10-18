@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { env } from '@/config/env';
+import { initSchema } from '@/db/initSchema';
 import { logger } from '@/utils/logger';
 
 export const pool = new Pool({ connectionString: env.DATABASE_URL });
@@ -15,15 +16,10 @@ export const connectDatabase = async (): Promise<void> => {
   }
   const client = await pool.connect();
   try {
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        user_id       VARCHAR(50) PRIMARY KEY,
-        password_hash TEXT        NOT NULL,
-        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at    TIMESTAMPTZ,
-        updated_by    VARCHAR(50)
-      )
-    `);
+    // Pre-release only: replace with real migrations before going to production.
+    if (env.NODE_ENV !== 'production') {
+      await initSchema(client);
+    }
     logger.info('Connected to Postgres');
   } finally {
     client.release();
