@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/health/ready'
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('database is reachable', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().database).to.eql(true);
+      });

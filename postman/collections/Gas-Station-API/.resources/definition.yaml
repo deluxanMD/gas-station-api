@@ -1,0 +1,13 @@
+$kind: collection
+name: Gas Station API
+description: Gas Station Portal backend API. Select the "Gas Station Local" environment to run against a dev server.
+variables:
+  - key: base_url
+    value: 'http://localhost:3000/api/v1'
+  - key: user_id
+    value: 'demo_user'
+  - key: password
+    value: 'Passw0rd!'
+  - key: user_role
+    value: 'ADMINISTRATOR'
+    description: One of the roles.code values (e.g. SITE_MANAGER, PRICING)

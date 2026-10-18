@@ -12,7 +12,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     await registerUser(parsed.data);
     res.status(201).json({
       status: 'success',
-      data: { userId: parsed.data.userId },
+      data: { userId: parsed.data.userId, userRole: parsed.data.userRole },
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
