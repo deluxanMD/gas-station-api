@@ -9,5 +9,5 @@ variables:
   - key: password
     value: 'Passw0rd!'
   - key: user_role
-    value: 'ADMINISTRATOR'
-    description: One of the roles.code values (e.g. SITE_MANAGER, PRICING)
+    value: 'OWNER'
+    description: One of the roles.code values (e.g. MANAGER, DISPATCH)

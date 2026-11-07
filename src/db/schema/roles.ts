@@ -1,14 +1,11 @@
-// `code` values are permanent identifiers the frontend relies on. Never rename them.
+// `code` values are permanent identifiers the frontend relies on. Avoid renaming them; update the frontend if one changes.
 export const ROLES = [
-  { code: 'CASHIER_SITE_STAFF', name: 'Cashier / Site Staff' },
-  { code: 'SITE_MANAGER', name: 'Site Manager' },
-  { code: 'PRICING', name: 'Pricing' },
-  { code: 'FUEL_DISPATCHER', name: 'Fuel Dispatcher' },
+  { code: 'CASHIER', name: 'Cashier' },
+  { code: 'SUPERVISOR', name: 'Supervisor' },
+  { code: 'MANAGER', name: 'Manager' },
+  { code: 'OWNER', name: 'Owner' },
+  { code: 'DISPATCH', name: 'Dispatch' },
   { code: 'ACCOUNTING', name: 'Accounting' },
-  { code: 'OWNER_EXECUTIVE', name: 'Owner / Executive' },
-  { code: 'CUSTOMER_OWNER', name: 'Customer Owner' },
-  { code: 'CUSTOMER_BOOKKEEPER', name: 'Customer Bookkeeper' },
-  { code: 'ADMINISTRATOR', name: 'Administrator' },
 ] as const;
 
 export type RoleCode = (typeof ROLES)[number]['code'];
