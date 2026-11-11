@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { loginSchema, registerSchema } from '@/schemas/auth.schema';
 import { registerUser, verifyUser } from '@/services/auth.service';
+import { createShift } from '@/services/shift.service';
 import { httpError } from '@/utils/httpError';
 import { validationError } from '@/utils/validationError';
 
@@ -28,9 +29,11 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     const valid = await verifyUser(parsed.data.userId, parsed.data.password);
     if (!valid) throw httpError(401, 'Invalid user ID or password');
 
+    const shift = await createShift(parsed.data.userId);
+
     res.status(200).json({
       status: 'success',
-      data: { userId: parsed.data.userId },
+      data: { userId: parsed.data.userId, shiftId: shift.id },
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
