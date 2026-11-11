@@ -8,8 +8,8 @@ export const create = async (req: Request, res: Response, next: NextFunction): P
     const parsed = createShiftSchema.safeParse(req.body);
     if (!parsed.success) throw validationError(parsed.error);
 
-    const shift = await createShift(parsed.data.userId);
-    res.status(201).json({
+    const { shift, created } = await createShift(parsed.data.userId);
+    res.status(created ? 201 : 200).json({
       status: 'success',
       data: shift,
       timestamp: new Date().toISOString(),
