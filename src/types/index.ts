@@ -18,3 +18,7 @@ export interface AppError extends Error {
   statusCode?: number;
   isOperational?: boolean;
 }
+
+export type { RegisterInput } from './auth.types';
+export type { HealthStatus } from './health.types';
+export type { LogLevel } from './logger.types';
