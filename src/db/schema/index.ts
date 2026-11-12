@@ -1,3 +1,4 @@
+import { payoutsTable } from '@/db/schema/payouts';
 import { creditTotalsTable } from '@/db/schema/creditTotals';
 import { dailySummaryReportTable } from '@/db/schema/dailySummaryReport';
 import { rolesSeed, rolesTable } from '@/db/schema/roles';
@@ -13,4 +14,5 @@ export const schema: readonly string[] = [
   shiftOpenIndex,
   creditTotalsTable,
   dailySummaryReportTable,
+  payoutsTable,
 ];
