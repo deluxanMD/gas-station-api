@@ -21,6 +21,7 @@ export interface AppError extends Error {
 
 export type { RegisterInput } from './auth.types';
 export type { CreditTotals } from './creditTotals.types';
+export type { DailySummaryReport } from './dailySummaryReport.types';
 export type { Shift } from './shift.types';
 export type { HealthStatus } from './health.types';
 export type { LogLevel } from './logger.types';
