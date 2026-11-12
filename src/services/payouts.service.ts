@@ -1,7 +1,8 @@
-import { PG_FOREIGN_KEY_VIOLATION } from '@/constants/database.constants';
+import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from '@/constants/database.constants';
 import { pool } from '@/config/database';
 import type { CreatePayoutsInput } from '@/schemas/payouts.schema';
 import type { Payouts, PayoutsRow } from '@/types/payouts.types';
+import { assertShiftOpen } from '@/services/shift.service';
 import { httpError } from '@/utils/httpError';
 
 const PAYOUTS_COLUMNS = `id, shift_id, user_id, total_pos, lotto_payout, vendor_payout, owner_payout,
@@ -24,6 +25,7 @@ const toPayouts = (row: PayoutsRow): Payouts => ({
 });
 
 export const createPayouts = async (input: CreatePayoutsInput): Promise<Payouts> => {
+  await assertShiftOpen(input.shiftId);
   try {
     const { rows } = await pool.query<PayoutsRow>(
       `INSERT INTO payouts
@@ -48,9 +50,9 @@ export const createPayouts = async (input: CreatePayoutsInput): Promise<Payouts>
     );
     return toPayouts(rows[0]);
   } catch (error) {
-    if ((error as { code?: string }).code === PG_FOREIGN_KEY_VIOLATION) {
-      throw httpError(404, 'Shift or user not found');
-    }
+    const code = (error as { code?: string }).code;
+    if (code === PG_FOREIGN_KEY_VIOLATION) throw httpError(404, 'Shift or user not found');
+    if (code === PG_UNIQUE_VIOLATION) throw httpError(409, 'Already saved for this shift');
     throw error;
   }
 };

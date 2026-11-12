@@ -18,3 +18,9 @@ export const payoutsTable = `
     updated_by        VARCHAR(50)
   )
 `;
+
+// One row per shift: a repeated submission is rejected instead of duplicating cash figures.
+export const payoutsShiftIndex = `
+  CREATE UNIQUE INDEX IF NOT EXISTS payouts_one_per_shift
+  ON payouts (shift_id)
+`;

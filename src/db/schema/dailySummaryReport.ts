@@ -15,3 +15,9 @@ export const dailySummaryReportTable = `
     updated_by     VARCHAR(50)
   )
 `;
+
+// One row per shift: a repeated submission is rejected instead of duplicating cash figures.
+export const dailySummaryReportShiftIndex = `
+  CREATE UNIQUE INDEX IF NOT EXISTS daily_summary_report_one_per_shift
+  ON daily_summary_report (shift_id)
+`;

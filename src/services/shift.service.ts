@@ -57,3 +57,25 @@ export const getShiftById = async (id: number): Promise<Shift> => {
   if (!rows[0]) throw httpError(404, 'Shift not found');
   return toShift(rows[0]);
 };
+
+/** The user's open shift, or null when they have not started one. */
+export const getCurrentShift = async (userId: number): Promise<Shift | null> =>
+  findOpenShift(userId);
+
+/** Ends the shift. Closing an already-closed shift succeeds and returns it unchanged, so retries are safe. */
+export const closeShift = async (id: number): Promise<Shift> => {
+  const { rows } = await pool.query<ShiftRow>(
+    `UPDATE shift SET end_time = NOW(), updated_at = NOW()
+     WHERE id = $1 AND end_time IS NULL
+     RETURNING ${SHIFT_COLUMNS}`,
+    [id],
+  );
+  if (rows[0]) return toShift(rows[0]);
+  return getShiftById(id);
+};
+
+/** Throws 404 for an unknown shift and 409 for one that has already ended. */
+export const assertShiftOpen = async (id: number): Promise<void> => {
+  const shift = await getShiftById(id);
+  if (shift.endTime) throw httpError(409, 'Shift is already closed');
+};

@@ -13,3 +13,9 @@ export const creditTotalsTable = `
     updated_by      VARCHAR(50)
   )
 `;
+
+// One row per shift: a repeated submission is rejected instead of duplicating cash figures.
+export const creditTotalsShiftIndex = `
+  CREATE UNIQUE INDEX IF NOT EXISTS credit_totals_one_per_shift
+  ON credit_totals (shift_id)
+`;
