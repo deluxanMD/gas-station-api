@@ -1,7 +1,7 @@
 import argon2 from 'argon2';
 import { PG_UNIQUE_VIOLATION } from '@/constants/database.constants';
 import { pool } from '@/config/database';
-import type { RegisterInput } from '@/types/auth.types';
+import type { LoginUser, RegisterInput, UserRow } from '@/types/auth.types';
 import { httpError } from '@/utils/httpError';
 
 export const registerUser = async ({
@@ -25,12 +25,13 @@ export const registerUser = async ({
   }
 };
 
-export const verifyUser = async (userId: string, password: string): Promise<boolean> => {
-  const { rows } = await pool.query<{ password_hash: string }>(
-    'SELECT password_hash FROM users WHERE user_id = $1',
+export const verifyUser = async (userId: string, password: string): Promise<LoginUser | null> => {
+  const { rows } = await pool.query<UserRow>(
+    'SELECT id, user_id, password_hash, user_role FROM users WHERE user_id = $1',
     [userId],
   );
   const row = rows[0];
-  if (!row) return false;
-  return argon2.verify(row.password_hash, password);
+  if (!row) return null;
+  if (!(await argon2.verify(row.password_hash, password))) return null;
+  return { id: row.id, userId: row.user_id, userRole: row.user_role };
 };
