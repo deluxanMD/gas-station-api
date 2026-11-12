@@ -33,6 +33,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       status: 'success',
       data: {
         token: signAccessToken(user),
+        id: user.id,
         userId: user.userId,
         userRole: user.userRole,
       },

@@ -14,7 +14,7 @@ const mockResponse = (): Response => {
 };
 
 describe('Auth Controller - login', () => {
-  it('returns the token, user id and role on valid credentials', async () => {
+  it('returns the token, ids and role on valid credentials', async () => {
     jest.mocked(verifyUser).mockResolvedValue({ id: 7, userId: 'alice', userRole: 'MANAGER' });
     jest.mocked(signAccessToken).mockReturnValue('signed.jwt.token');
     const req = { body: { userId: 'alice', password: 'secret1' } } as Request;
@@ -26,7 +26,7 @@ describe('Auth Controller - login', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'success',
-        data: { token: 'signed.jwt.token', userId: 'alice', userRole: 'MANAGER' },
+        data: { token: 'signed.jwt.token', id: 7, userId: 'alice', userRole: 'MANAGER' },
       }),
     );
   });
