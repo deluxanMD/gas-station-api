@@ -7,6 +7,22 @@ import {
   dailySummaryReportShiftIndex,
   dailySummaryReportTable,
 } from '@/db/schema/dailySummaryReport';
+import {
+  lottoReconciliationShiftIndex,
+  lottoReconciliationTable,
+} from '@/db/schema/lottoReconciliation';
+import {
+  lottoReportShiftIndex,
+  lottoReportSlipIndex,
+  lottoReportSlipTable,
+  lottoReportTable,
+} from '@/db/schema/lottoReport';
+import {
+  scratchTicketLineReportIndex,
+  scratchTicketLineTable,
+  scratchTicketReportShiftIndex,
+  scratchTicketReportTable,
+} from '@/db/schema/scratchTicket';
 import { rolesSeed, rolesTable } from '@/db/schema/roles';
 import { shiftOpenIndex, shiftTable } from '@/db/schema/shifts';
 import { usersTable } from '@/db/schema/users';
@@ -30,4 +46,14 @@ export const schema: readonly string[] = [
   fuelDeliveryBolIndex,
   fuelDipTable,
   fuelDipShiftIndex,
+  scratchTicketReportTable,
+  scratchTicketReportShiftIndex,
+  scratchTicketLineTable,
+  scratchTicketLineReportIndex,
+  lottoReportTable,
+  lottoReportShiftIndex,
+  lottoReportSlipTable,
+  lottoReportSlipIndex,
+  lottoReconciliationTable,
+  lottoReconciliationShiftIndex,
 ];
