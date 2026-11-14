@@ -2,10 +2,8 @@ export interface FuelDip {
   id: number;
   shiftId: number;
   userId: number;
-  // YYYY-MM-DD
-  dipDate: string;
-  // HH:mm, 24-hour
-  dipTime: string;
+  // ISO 8601 instant of the reading.
+  dipAt: string;
   regularTcVolume: number;
   regularUllage90: number;
   premiumTcVolume: number;
@@ -18,8 +16,7 @@ export interface FuelDipRow {
   id: number;
   shift_id: number;
   user_id: number;
-  dip_date: string;
-  dip_time: string;
+  dip_at: Date;
   tc_volume_regular: number;
   ullage_90_regular: number;
   tc_volume_premium: number;

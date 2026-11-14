@@ -11,8 +11,7 @@ body:
     {
       "shiftId": {{shift_id}},
       "userId": {{db_user_id}},
-      "dipDate": "2026-11-09",
-      "dipTime": "22:15",
+      "dipAt": "2026-11-09T22:15:00.000Z",
       "regularTcVolume": 10000.5,
       "regularUllage90": 2500,
       "premiumTcVolume": 8000,

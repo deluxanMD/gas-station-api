@@ -975,7 +975,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"dipDate\": \"2026-11-09\",\n  \"dipTime\": \"22:15\",\n  \"regularTcVolume\": 10000.5,\n  \"regularUllage90\": 2500,\n  \"premiumTcVolume\": 8000,\n  \"premiumUllage90\": 1000.25,\n  \"dieselTcVolume\": 12000,\n  \"dieselUllage90\": 3000\n}",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"dipAt\": \"2026-11-09T22:15:00.000Z\",\n  \"regularTcVolume\": 10000.5,\n  \"regularUllage90\": 2500,\n  \"premiumTcVolume\": 8000,\n  \"premiumUllage90\": 1000.25,\n  \"dieselTcVolume\": 12000,\n  \"dieselUllage90\": 3000\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -985,16 +985,16 @@
           }
         },
         {
-          "name": "Create fuel dip - invalid time",
+          "name": "Create fuel dip - invalid dipAt",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('rejects with 400 for a time outside 00:00-23:59', () => {",
+                  "pm.test('rejects with 400 for a malformed dipAt', () => {",
                   "  pm.response.to.have.status(400);",
-                  "  pm.expect(pm.response.json().message).to.include('dipTime');",
+                  "  pm.expect(pm.response.json().message).to.include('dipAt');",
                   "});"
                 ]
               }
@@ -1015,7 +1015,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"dipDate\": \"2026-11-09\",\n  \"dipTime\": \"25:00\"\n}",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"dipAt\": \"2026-11-09 25:00\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
