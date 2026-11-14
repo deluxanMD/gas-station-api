@@ -86,7 +86,7 @@ postman/           # Postman collections/environments
 - Validate every input (params, query, body) with a Zod schema in `src/schemas/` and `safeParse` in the controller; on failure `throw validationError(parsed.error)`. Never trust the client, including ids and roles.
 - Use `z.coerce` for numeric query/param values; derive types from the schema (`z.infer`) when useful.
 - Passwords are hashed with argon2; never log or return hashes, tokens or secrets.
-- Tokens are JWTs signed with `JWT_SECRET` (`services/token.service.ts`). The portal only hides UI by role, so authorization has to be enforced here: new endpoints that expose or change data must check the caller's role, and any gap where an existing route doesn't must be called out rather than silently copied.
+- Tokens are JWTs signed with `JWT_SECRET` (`services/token.service.ts`). Every route except `/auth/*` and `/health/*` sits behind `requireAuth` (`middlewares/auth.middleware.ts`, bearer token, 401 otherwise), applied where the router is mounted in `routes/index.ts`. A new feature router must be mounted with `requireAuth`. The verified user is in `res.locals.user`. Authentication is enforced; per-role authorization is not yet, and the portal only hides UI by role, so endpoints that expose or change data should also check the caller's role, and any gap must be called out rather than silently copied.
 - `helmet`, `cors` (origin from `CORS_ORIGIN`) and JSON body limits are set in `app.ts`; don't loosen them casually.
 - Log with `utils/logger` (no `console.log`), with structured metadata, and never log request bodies containing credentials.
 

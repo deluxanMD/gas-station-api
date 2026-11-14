@@ -1,2 +1,4 @@
 $kind: collection
+auth:
+  type: noauth
 order: 2000

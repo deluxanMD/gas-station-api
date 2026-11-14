@@ -3,3 +3,8 @@ export const USER_ID_MAX_LENGTH = 50;
 export const PASSWORD_MIN_LENGTH = 6;
 export const PASSWORD_MAX_LENGTH = 128;
 export const UPDATED_BY_MAX_LENGTH = 50;
+
+// Scheme names used in the `Authorization` header.
+export enum AuthScheme {
+  Bearer = 'Bearer',
+}

@@ -1,6 +1,11 @@
 $kind: collection
 name: Gas Station API
 description: Gas Station Portal backend API. Select the "Gas Station Local" environment to run against a dev server.
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{access_token}}'
 variables:
   - key: base_url
     value: 'http://localhost:3000/api/v1'
@@ -20,3 +25,6 @@ variables:
   - key: shift_date
     value: '2026-11-09'
     description: Calendar day (YYYY-MM-DD) for the "List shifts - by date" request
+  - key: access_token
+    value: ''
+    description: Bearer token; set automatically by Auth / Login
