@@ -8,6 +8,7 @@ import fuelRouter from './fuel.routes';
 import fuelDeliveryRouter from './fuelDelivery.routes';
 import healthRouter from './health.routes';
 import payoutsRouter from './payouts.routes';
+import scratchTicketRouter from './scratchTicket.routes';
 import shiftRouter from './shift.routes';
 
 const router = Router();
@@ -22,5 +23,6 @@ router.use('/fuel', requireAuth, fuelRouter);
 router.use('/fuel-deliveries', requireAuth, fuelDeliveryRouter);
 router.use('/fuel-dips', requireAuth, fuelDipRouter);
 router.use('/payouts', requireAuth, payoutsRouter);
+router.use('/scratch-tickets', requireAuth, scratchTicketRouter);
 
 export default router;
