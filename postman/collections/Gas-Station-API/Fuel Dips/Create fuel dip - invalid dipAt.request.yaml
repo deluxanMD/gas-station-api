@@ -1,0 +1,23 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/fuel-dips'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "dipAt": "2026-11-09 25:00"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 400 for a malformed dipAt', () => {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().message).to.include('dipAt');
+      });

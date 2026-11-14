@@ -1,0 +1,20 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/daily-summary-reports'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "endDate": "not-a-date"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 400', () => pm.response.to.have.status(400));

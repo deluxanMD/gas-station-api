@@ -1,0 +1,22 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/shifts'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": {{db_user_id}}
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // 201 when a shift is opened, 200 when the user already had one open
+      pm.test('opens or returns the open shift', () => pm.expect([200, 201]).to.include(pm.response.code));
+      const shift = pm.response.json().data;
+      pm.test('shift is open', () => pm.expect(shift.endTime).to.eql(null));
+      pm.collectionVariables.set('shift_id', String(shift.id));

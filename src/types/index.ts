@@ -18,3 +18,17 @@ export interface AppError extends Error {
   statusCode?: number;
   isOperational?: boolean;
 }
+
+export type { RegisterInput } from './auth.types';
+export type { CreditTotals } from './creditTotals.types';
+export type { DailySummaryReport } from './dailySummaryReport.types';
+export type { Fuel } from './fuel.types';
+export type { FuelDelivery } from './fuelDelivery.types';
+export type { FuelDip } from './fuelDip.types';
+export type { LottoReconciliation } from './lottoReconciliation.types';
+export type { LottoReport } from './lottoReport.types';
+export type { Payouts } from './payouts.types';
+export type { ScratchTicketReport } from './scratchTicket.types';
+export type { Shift } from './shift.types';
+export type { HealthStatus } from './health.types';
+export type { LogLevel } from './logger.types';

@@ -1,0 +1,26 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/auth/login'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": "{{user_id}}",
+      "password": "{{password}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('returns 200 with userId', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().data.userId).to.eql(pm.collectionVariables.get('user_id'));
+      });
+      // Every other endpoint needs this bearer token.
+      pm.collectionVariables.set('access_token', pm.response.json().data.token);
+      // Later requests use the numeric id as the shift owner.
+      pm.collectionVariables.set('db_user_id', String(pm.response.json().data.id));

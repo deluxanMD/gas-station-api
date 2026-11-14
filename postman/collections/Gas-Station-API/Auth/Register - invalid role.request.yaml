@@ -1,0 +1,21 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/auth/register'
+order: 1500
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": "{{user_id}}-invalid-role",
+      "password": "{{password}}",
+      "confirmPassword": "{{password}}",
+      "userRole": "NOT_A_ROLE"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects unknown role with 400', () => pm.response.to.have.status(400));
