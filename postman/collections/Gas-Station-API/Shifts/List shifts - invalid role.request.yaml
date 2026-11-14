@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/shifts?role=NOT_A_ROLE'
+order: 6000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 400', () => pm.response.to.have.status(400));

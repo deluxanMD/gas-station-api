@@ -1,0 +1,27 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/credit-totals'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "creditTerminal": 100.5,
+      "creditTotal": 100.5,
+      "debitTerminal": 45.25,
+      "fleet": 0,
+      "svRedemption": 5
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('created', () => {
+        pm.response.to.have.status(201);
+        pm.expect(String(pm.response.json().data.shiftId)).to.eql(pm.collectionVariables.get('shift_id'));
+      });

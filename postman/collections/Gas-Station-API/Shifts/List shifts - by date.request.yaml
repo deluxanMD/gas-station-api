@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/shifts?role=CASHIER&date={{shift_date}}'
+order: 5000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('returns 200 with a list', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().data).to.be.an('array');
+      });

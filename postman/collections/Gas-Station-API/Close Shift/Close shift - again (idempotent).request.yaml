@@ -1,0 +1,12 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/shifts/{{shift_id}}/close'
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('succeeds and stays closed', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().data.endTime).to.be.a('string');
+      });
