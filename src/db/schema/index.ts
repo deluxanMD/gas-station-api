@@ -8,6 +8,10 @@ import {
   dailySummaryReportTable,
 } from '@/db/schema/dailySummaryReport';
 import {
+  lottoReconciliationShiftIndex,
+  lottoReconciliationTable,
+} from '@/db/schema/lottoReconciliation';
+import {
   lottoReportShiftIndex,
   lottoReportSlipIndex,
   lottoReportSlipTable,
@@ -50,4 +54,6 @@ export const schema: readonly string[] = [
   lottoReportShiftIndex,
   lottoReportSlipTable,
   lottoReportSlipIndex,
+  lottoReconciliationTable,
+  lottoReconciliationShiftIndex,
 ];
