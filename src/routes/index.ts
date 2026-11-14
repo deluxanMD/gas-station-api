@@ -4,6 +4,7 @@ import authRouter from './auth.routes';
 import creditTotalsRouter from './creditTotals.routes';
 import dailySummaryReportRouter from './dailySummaryReport.routes';
 import fuelRouter from './fuel.routes';
+import fuelDeliveryRouter from './fuelDelivery.routes';
 import healthRouter from './health.routes';
 import payoutsRouter from './payouts.routes';
 import shiftRouter from './shift.routes';
@@ -17,6 +18,7 @@ router.use('/shifts', requireAuth, shiftRouter);
 router.use('/credit-totals', requireAuth, creditTotalsRouter);
 router.use('/daily-summary-reports', requireAuth, dailySummaryReportRouter);
 router.use('/fuel', requireAuth, fuelRouter);
+router.use('/fuel-deliveries', requireAuth, fuelDeliveryRouter);
 router.use('/payouts', requireAuth, payoutsRouter);
 
 export default router;

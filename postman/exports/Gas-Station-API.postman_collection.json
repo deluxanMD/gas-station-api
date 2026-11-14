@@ -822,6 +822,126 @@
       ]
     },
     {
+      "name": "Fuel Deliveries",
+      "item": [
+        {
+          "name": "Create fuel delivery",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(String(pm.response.json().data.shiftId)).to.eql(pm.collectionVariables.get('shift_id'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel-deliveries",
+              "host": ["{{base_url}}"],
+              "path": ["fuel-deliveries"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"deliveryDate\": \"2026-11-08\",\n  \"bolNumber\": \"BOL-{{$timestamp}}\",\n  \"reg\": 5000,\n  \"prem\": 2000.5,\n  \"diesel\": 3000,\n  \"total\": 10000.5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create fuel delivery - total mismatch",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rejects with 400 when the total is not reg + prem + diesel', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().message).to.include('total');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel-deliveries",
+              "host": ["{{base_url}}"],
+              "path": ["fuel-deliveries"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"deliveryDate\": \"2026-11-08\",\n  \"bolNumber\": \"BOL-MISMATCH\",\n  \"reg\": 10,\n  \"total\": 11\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create fuel delivery - invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel-deliveries",
+              "host": ["{{base_url}}"],
+              "path": ["fuel-deliveries"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Payouts",
       "item": [
         {

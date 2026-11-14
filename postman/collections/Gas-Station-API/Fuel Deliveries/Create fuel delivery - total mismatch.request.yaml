@@ -1,0 +1,26 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/fuel-deliveries'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "deliveryDate": "2026-11-08",
+      "bolNumber": "BOL-MISMATCH",
+      "reg": 10,
+      "total": 11
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 400 when the total is not reg + prem + diesel', () => {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().message).to.include('total');
+      });
