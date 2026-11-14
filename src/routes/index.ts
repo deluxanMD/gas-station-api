@@ -7,6 +7,7 @@ import fuelDipRouter from './fuelDip.routes';
 import fuelRouter from './fuel.routes';
 import fuelDeliveryRouter from './fuelDelivery.routes';
 import healthRouter from './health.routes';
+import lottoReportRouter from './lottoReport.routes';
 import payoutsRouter from './payouts.routes';
 import scratchTicketRouter from './scratchTicket.routes';
 import shiftRouter from './shift.routes';
@@ -22,6 +23,7 @@ router.use('/daily-summary-reports', requireAuth, dailySummaryReportRouter);
 router.use('/fuel', requireAuth, fuelRouter);
 router.use('/fuel-deliveries', requireAuth, fuelDeliveryRouter);
 router.use('/fuel-dips', requireAuth, fuelDipRouter);
+router.use('/lotto-reports', requireAuth, lottoReportRouter);
 router.use('/payouts', requireAuth, payoutsRouter);
 router.use('/scratch-tickets', requireAuth, scratchTicketRouter);
 

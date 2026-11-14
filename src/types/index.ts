@@ -25,6 +25,7 @@ export type { DailySummaryReport } from './dailySummaryReport.types';
 export type { Fuel } from './fuel.types';
 export type { FuelDelivery } from './fuelDelivery.types';
 export type { FuelDip } from './fuelDip.types';
+export type { LottoReport } from './lottoReport.types';
 export type { Payouts } from './payouts.types';
 export type { ScratchTicketReport } from './scratchTicket.types';
 export type { Shift } from './shift.types';

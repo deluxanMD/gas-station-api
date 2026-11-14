@@ -8,6 +8,12 @@ import {
   dailySummaryReportTable,
 } from '@/db/schema/dailySummaryReport';
 import {
+  lottoReportShiftIndex,
+  lottoReportSlipIndex,
+  lottoReportSlipTable,
+  lottoReportTable,
+} from '@/db/schema/lottoReport';
+import {
   scratchTicketLineReportIndex,
   scratchTicketLineTable,
   scratchTicketReportShiftIndex,
@@ -40,4 +46,8 @@ export const schema: readonly string[] = [
   scratchTicketReportShiftIndex,
   scratchTicketLineTable,
   scratchTicketLineReportIndex,
+  lottoReportTable,
+  lottoReportShiftIndex,
+  lottoReportSlipTable,
+  lottoReportSlipIndex,
 ];
