@@ -1,0 +1,30 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/fuel-dips'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "dipDate": "2026-11-09",
+      "dipTime": "22:15",
+      "regularTcVolume": 10000.5,
+      "regularUllage90": 2500,
+      "premiumTcVolume": 8000,
+      "premiumUllage90": 1000.25,
+      "dieselTcVolume": 12000,
+      "dieselUllage90": 3000
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('created', () => {
+        pm.response.to.have.status(201);
+        pm.expect(String(pm.response.json().data.shiftId)).to.eql(pm.collectionVariables.get('shift_id'));
+      });

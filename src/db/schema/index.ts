@@ -1,5 +1,6 @@
 import { fuelShiftIndex, fuelTable } from '@/db/schema/fuel';
 import { fuelDeliveryBolIndex, fuelDeliveryTable } from '@/db/schema/fuelDelivery';
+import { fuelDipShiftIndex, fuelDipTable } from '@/db/schema/fuelDip';
 import { payoutsShiftIndex, payoutsTable } from '@/db/schema/payouts';
 import { creditTotalsShiftIndex, creditTotalsTable } from '@/db/schema/creditTotals';
 import {
@@ -27,4 +28,6 @@ export const schema: readonly string[] = [
   fuelShiftIndex,
   fuelDeliveryTable,
   fuelDeliveryBolIndex,
+  fuelDipTable,
+  fuelDipShiftIndex,
 ];

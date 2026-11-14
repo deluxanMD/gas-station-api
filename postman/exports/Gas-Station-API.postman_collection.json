@@ -942,6 +942,126 @@
       ]
     },
     {
+      "name": "Fuel Dips",
+      "item": [
+        {
+          "name": "Create fuel dip",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(String(pm.response.json().data.shiftId)).to.eql(pm.collectionVariables.get('shift_id'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel-dips",
+              "host": ["{{base_url}}"],
+              "path": ["fuel-dips"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"dipDate\": \"2026-11-09\",\n  \"dipTime\": \"22:15\",\n  \"regularTcVolume\": 10000.5,\n  \"regularUllage90\": 2500,\n  \"premiumTcVolume\": 8000,\n  \"premiumUllage90\": 1000.25,\n  \"dieselTcVolume\": 12000,\n  \"dieselUllage90\": 3000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create fuel dip - invalid time",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rejects with 400 for a time outside 00:00-23:59', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().message).to.include('dipTime');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel-dips",
+              "host": ["{{base_url}}"],
+              "path": ["fuel-dips"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"dipDate\": \"2026-11-09\",\n  \"dipTime\": \"25:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create fuel dip - invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel-dips",
+              "host": ["{{base_url}}"],
+              "path": ["fuel-dips"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Payouts",
       "item": [
         {

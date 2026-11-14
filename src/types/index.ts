@@ -24,6 +24,7 @@ export type { CreditTotals } from './creditTotals.types';
 export type { DailySummaryReport } from './dailySummaryReport.types';
 export type { Fuel } from './fuel.types';
 export type { FuelDelivery } from './fuelDelivery.types';
+export type { FuelDip } from './fuelDip.types';
 export type { Payouts } from './payouts.types';
 export type { Shift } from './shift.types';
 export type { HealthStatus } from './health.types';

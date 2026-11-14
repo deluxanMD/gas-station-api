@@ -1,0 +1,24 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/fuel-dips'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "dipDate": "2026-11-09",
+      "dipTime": "25:00"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 400 for a time outside 00:00-23:59', () => {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().message).to.include('dipTime');
+      });
