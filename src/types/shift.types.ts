@@ -27,3 +27,64 @@ export interface ShiftsForDayFilter {
 export interface ShiftWithUser extends Shift {
   userName: string;
 }
+
+/** All sums are integer cents. */
+export interface ConsolidatedCreditTotals {
+  creditTerminalCents: number;
+  creditTotalCents: number;
+  debitTerminalCents: number;
+  fleetCents: number;
+  svRedemptionCents: number;
+}
+
+export interface ConsolidatedDailySummary {
+  fuelSalesCents: number;
+  itemSalesCents: number;
+  gstCents: number;
+  hstCents: number;
+  pennyRoundingCents: number;
+  totalSalesCents: number;
+}
+
+export interface ConsolidatedPayoutsAndCash {
+  totalPosCents: number;
+  // Lotto, vendor, owner and misc payouts together.
+  totalPayoutsCents: number;
+  lottoWinnerCents: number;
+  giftCertificatesCents: number;
+  redemptionsCents: number;
+  safedropsCents: number;
+  cashOnHandCents: number;
+}
+
+/** The cashier-entered figures of several shifts, summed. */
+export interface ConsolidatedShifts {
+  shiftIds: number[];
+  // Shifts missing at least one of their credit totals, daily summary or payouts records; they count as zero.
+  incompleteShiftIds: number[];
+  creditTotals: ConsolidatedCreditTotals;
+  dailySummary: ConsolidatedDailySummary;
+  payoutsAndCash: ConsolidatedPayoutsAndCash;
+}
+
+// `bigint` sums come back from pg as strings.
+export interface ConsolidatedRow {
+  credit_terminal: string;
+  credit_total: string;
+  debit_terminal: string;
+  fleet: string;
+  sv_redemption: string;
+  fuel_sales: string;
+  item_sales: string;
+  gst: string;
+  hst: string;
+  penny_rounding: string;
+  total_sales: string;
+  total_pos: string;
+  total_payouts: string;
+  lotto_winner: string;
+  gift_certificates: string;
+  redemptions: string;
+  safedrops: string;
+  cash_on_hand: string;
+}

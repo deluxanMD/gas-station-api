@@ -3,6 +3,7 @@ import { pool } from '@/config/database';
 import {
   assertShiftOpen,
   closeShift,
+  consolidateShifts,
   getCurrentShift,
   getShiftsForDay,
 } from '@/services/shift.service';
@@ -131,5 +132,87 @@ describe('Shift service', () => {
 
       await expect(assertShiftOpen(99)).rejects.toMatchObject({ statusCode: 404 });
     });
+  });
+});
+
+const totalsRow = {
+  credit_terminal: '10050',
+  credit_total: '10050',
+  debit_terminal: '4525',
+  fleet: '0',
+  sv_redemption: '500',
+  fuel_sales: '600000',
+  item_sales: '300000',
+  gst: '45000',
+  hst: '0',
+  penny_rounding: '-2',
+  total_sales: '944998',
+  total_pos: '100000',
+  total_payouts: '12250',
+  lotto_winner: '2500',
+  gift_certificates: '0',
+  redemptions: '0',
+  safedrops: '20000',
+  cash_on_hand: '57730',
+};
+
+describe('consolidateShifts', () => {
+  it('returns the summed figures in cents, grouped by section', async () => {
+    query
+      .mockResolvedValueOnce({ rows: [{ id: 1 }, { id: 2 }] })
+      .mockResolvedValueOnce({ rows: [totalsRow] })
+      .mockResolvedValueOnce({ rows: [{ id: 2 }] });
+
+    const result = await consolidateShifts([1, 2]);
+
+    expect(result).toEqual({
+      shiftIds: [1, 2],
+      incompleteShiftIds: [2],
+      creditTotals: {
+        creditTerminalCents: 10050,
+        creditTotalCents: 10050,
+        debitTerminalCents: 4525,
+        fleetCents: 0,
+        svRedemptionCents: 500,
+      },
+      dailySummary: {
+        fuelSalesCents: 600000,
+        itemSalesCents: 300000,
+        gstCents: 45000,
+        hstCents: 0,
+        pennyRoundingCents: -2,
+        totalSalesCents: 944998,
+      },
+      payoutsAndCash: {
+        totalPosCents: 100000,
+        totalPayoutsCents: 12250,
+        lottoWinnerCents: 2500,
+        giftCertificatesCents: 0,
+        redemptionsCents: 0,
+        safedropsCents: 20000,
+        cashOnHandCents: 57730,
+      },
+    });
+  });
+
+  it('sums rounded cents in SQL for the requested shifts only', async () => {
+    query
+      .mockResolvedValueOnce({ rows: [{ id: 1 }] })
+      .mockResolvedValueOnce({ rows: [totalsRow] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await consolidateShifts([1]);
+
+    const [sql, params] = query.mock.calls[1];
+    expect(sql).toContain('ROUND(credit_terminal * 100)');
+    expect(sql).toContain('shift_id = ANY($1::int[])');
+    expect(params).toEqual([[1]]);
+  });
+
+  it('responds 404 when a shift does not exist', async () => {
+    query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
+
+    await expect(consolidateShifts([1, 99])).rejects.toMatchObject({ statusCode: 404 });
+    expect(query).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,0 +1,26 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/shifts/consolidated'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftIds": [{{shift_id}}]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('returns the summed figures in cents', () => {
+        pm.response.to.have.status(200);
+        const data = pm.response.json().data;
+        pm.expect(data.shiftIds).to.eql([Number(pm.collectionVariables.get('shift_id'))]);
+        pm.expect(data.creditTotals.creditTerminalCents).to.eql(10050);
+        pm.expect(data.dailySummary.totalSalesCents).to.eql(944998);
+        pm.expect(data.payoutsAndCash.totalPayoutsCents).to.eql(12250);
+        pm.expect(data.incompleteShiftIds).to.eql([]);
+      });

@@ -777,6 +777,126 @@
       ]
     },
     {
+      "name": "Consolidation",
+      "item": [
+        {
+          "name": "Consolidate shifts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns the summed figures in cents', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const data = pm.response.json().data;",
+                  "  pm.expect(data.shiftIds).to.eql([Number(pm.collectionVariables.get('shift_id'))]);",
+                  "  pm.expect(data.creditTotals.creditTerminalCents).to.eql(10050);",
+                  "  pm.expect(data.dailySummary.totalSalesCents).to.eql(944998);",
+                  "  pm.expect(data.payoutsAndCash.totalPayoutsCents).to.eql(12250);",
+                  "  pm.expect(data.incompleteShiftIds).to.eql([]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/shifts/consolidated",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "consolidated"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftIds\": [{{shift_id}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Consolidate shifts - not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('responds 404', () => pm.response.to.have.status(404));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/shifts/consolidated",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "consolidated"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftIds\": [2147483647]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Consolidate shifts - invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/shifts/consolidated",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "consolidated"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Close Shift",
       "item": [
         {

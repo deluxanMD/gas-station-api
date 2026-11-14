@@ -21,3 +21,12 @@ export const listShiftsQuerySchema = z.object({
     .optional(),
   role: z.nativeEnum(UserRole).optional(),
 });
+
+export const consolidatedShiftsSchema = z.object({
+  shiftIds: z
+    .array(z.number().int().positive())
+    .min(1)
+    .max(100)
+    // Repeated ids would otherwise be summed twice.
+    .transform((ids) => [...new Set(ids)]),
+});

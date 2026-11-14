@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import {
+  consolidatedShiftsSchema,
   createShiftSchema,
   currentShiftQuerySchema,
   listShiftsQuerySchema,
@@ -7,6 +8,7 @@ import {
 } from '@/schemas/shift.schema';
 import {
   closeShift,
+  consolidateShifts,
   createShift,
   getShiftsForDay,
   getCurrentShift,
@@ -79,6 +81,26 @@ export const listShifts = async (
     res.status(200).json({
       status: 'success',
       data: shifts,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const consolidated = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const parsed = consolidatedShiftsSchema.safeParse(req.body);
+    if (!parsed.success) throw validationError(parsed.error);
+
+    const data = await consolidateShifts(parsed.data.shiftIds);
+    res.status(200).json({
+      status: 'success',
+      data,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

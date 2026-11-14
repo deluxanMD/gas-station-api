@@ -38,6 +38,7 @@ postman/           # Postman collections/environments
 ```
 
 - Controllers never touch `pool`; services never touch `req`/`res`. SQL lives only in services.
+- One service file per table (`shift.service.ts` for `shift`, `payouts.service.ts` for `payouts`). Everything about a table lives there, including queries that aggregate or report on it; don't add a separate service for a feature that reads from an existing table's service.
 - Import with the `@/` alias (maps to `src/`), never deep relative paths across layers.
 - Adding an endpoint: schema → service → controller → route (→ register the router in `routes/index.ts` if it is a new feature) → types → tests → Postman collection when the feature has one.
 - Order routes so fixed paths (`/current`, `/cashier`) come before `/:id`.
