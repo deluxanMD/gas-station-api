@@ -1,0 +1,24 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/fuel'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "reg87Volume": 10,
+      "totalVolume": 11
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 400 when the total is not the sum of the grades', () => {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().message).to.include('totalVolume');
+      });

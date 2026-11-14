@@ -702,6 +702,126 @@
       ]
     },
     {
+      "name": "Fuel",
+      "item": [
+        {
+          "name": "Create fuel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(String(pm.response.json().data.shiftId)).to.eql(pm.collectionVariables.get('shift_id'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel",
+              "host": ["{{base_url}}"],
+              "path": ["fuel"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"biodieselVolume\": 100.25,\n  \"biodieselTotal\": 150,\n  \"reg87Volume\": 200.5,\n  \"reg87Total\": 300,\n  \"extra89Volume\": 10,\n  \"extra89Total\": 15,\n  \"supr91Volume\": 20,\n  \"supr91Total\": 30,\n  \"plus93Volume\": 0,\n  \"plus93Total\": 0,\n  \"totalVolume\": 330.75\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create fuel - total volume mismatch",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rejects with 400 when the total is not the sum of the grades', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().message).to.include('totalVolume');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel",
+              "host": ["{{base_url}}"],
+              "path": ["fuel"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"reg87Volume\": 10,\n  \"totalVolume\": 11\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create fuel - invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fuel",
+              "host": ["{{base_url}}"],
+              "path": ["fuel"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Payouts",
       "item": [
         {
