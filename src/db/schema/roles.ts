@@ -1,16 +1,17 @@
-// `code` values are permanent identifiers the frontend relies on. Avoid renaming them; update the frontend if one changes.
+import { UserRole } from '@/constants/role.constants';
+
 export const ROLES = [
-  { code: 'CASHIER', name: 'Cashier' },
-  { code: 'SUPERVISOR', name: 'Supervisor' },
-  { code: 'MANAGER', name: 'Manager' },
-  { code: 'OWNER', name: 'Owner' },
-  { code: 'DISPATCH', name: 'Dispatch' },
-  { code: 'ACCOUNTING', name: 'Accounting' },
+  { code: UserRole.Cashier, name: 'Cashier' },
+  { code: UserRole.Supervisor, name: 'Supervisor' },
+  { code: UserRole.Manager, name: 'Manager' },
+  { code: UserRole.Owner, name: 'Owner' },
+  { code: UserRole.Dispatch, name: 'Dispatch' },
+  { code: UserRole.Accounting, name: 'Accounting' },
 ] as const;
 
-export type RoleCode = (typeof ROLES)[number]['code'];
+export type RoleCode = UserRole;
 
-export const ROLE_CODES = ROLES.map((role) => role.code) as [RoleCode, ...RoleCode[]];
+export const ROLE_CODES = Object.values(UserRole);
 
 export const rolesTable = `
   CREATE TABLE IF NOT EXISTS roles (

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { UserRole } from '@/constants/role.constants';
 import { login } from '@/controllers/auth.controller';
 import { verifyUser } from '@/services/auth.service';
 import { signAccessToken } from '@/services/token.service';
@@ -15,7 +16,9 @@ const mockResponse = (): Response => {
 
 describe('Auth Controller - login', () => {
   it('returns the token, ids and role on valid credentials', async () => {
-    jest.mocked(verifyUser).mockResolvedValue({ id: 7, userId: 'alice', userRole: 'MANAGER' });
+    jest
+      .mocked(verifyUser)
+      .mockResolvedValue({ id: 7, userId: 'alice', userRole: UserRole.Manager });
     jest.mocked(signAccessToken).mockReturnValue('signed.jwt.token');
     const req = { body: { userId: 'alice', password: 'secret1' } } as Request;
     const res = mockResponse();
@@ -26,7 +29,7 @@ describe('Auth Controller - login', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'success',
-        data: { token: 'signed.jwt.token', id: 7, userId: 'alice', userRole: 'MANAGER' },
+        data: { token: 'signed.jwt.token', id: 7, userId: 'alice', userRole: UserRole.Manager },
       }),
     );
   });

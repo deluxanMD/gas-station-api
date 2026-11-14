@@ -11,3 +11,12 @@ variables:
   - key: user_role
     value: 'OWNER'
     description: One of the roles.code values (e.g. MANAGER, DISPATCH)
+  - key: db_user_id
+    value: ''
+    description: Numeric users.id; set automatically by Auth / Login
+  - key: shift_id
+    value: ''
+    description: Set automatically by Shifts / Start shift
+  - key: shift_date
+    value: '2026-11-09'
+    description: Calendar day (YYYY-MM-DD) for the "List shifts - by date" request

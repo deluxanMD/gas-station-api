@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/shifts/2147483647'
+order: 8000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('responds 404', () => pm.response.to.have.status(404));

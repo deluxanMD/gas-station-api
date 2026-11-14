@@ -1,5 +1,11 @@
+import { UserRole } from '@/constants/role.constants';
 import { pool } from '@/config/database';
-import { assertShiftOpen, closeShift, getCurrentShift } from '@/services/shift.service';
+import {
+  assertShiftOpen,
+  closeShift,
+  getCurrentShift,
+  getShiftsForDay,
+} from '@/services/shift.service';
 
 jest.mock('@/config/database', () => ({ pool: { query: jest.fn() } }));
 
@@ -29,6 +35,53 @@ describe('Shift service', () => {
       query.mockResolvedValue({ rows: [] });
 
       await expect(getCurrentShift(7)).resolves.toBeNull();
+    });
+  });
+
+  describe('getShiftsForDay', () => {
+    it('maps the rows with the owner name', async () => {
+      query.mockResolvedValue({
+        rows: [
+          { ...row(null), user_name: 'cashier1' },
+          { ...row(new Date('2026-01-01T16:00:00.000Z')), id: 6, user_name: 'cashier2' },
+        ],
+      });
+
+      const shifts = await getShiftsForDay();
+
+      expect(shifts).toEqual([
+        {
+          id: 5,
+          userId: 7,
+          userName: 'cashier1',
+          startTime: '2026-01-01T08:00:00.000Z',
+          endTime: null,
+        },
+        {
+          id: 6,
+          userId: 7,
+          userName: 'cashier2',
+          startTime: '2026-01-01T08:00:00.000Z',
+          endTime: '2026-01-01T16:00:00.000Z',
+        },
+      ]);
+    });
+
+    it('applies no role filter and defaults to today when given no filter', async () => {
+      query.mockResolvedValue({ rows: [] });
+
+      await getShiftsForDay();
+
+      expect(query.mock.calls[0][1]).toEqual([null, null]);
+    });
+
+    it('filters on the given role and day', async () => {
+      query.mockResolvedValue({ rows: [] });
+
+      await expect(
+        getShiftsForDay({ role: UserRole.Cashier, date: '2026-01-01' }),
+      ).resolves.toEqual([]);
+      expect(query.mock.calls[0][1]).toEqual(['CASHIER', '2026-01-01']);
     });
   });
 

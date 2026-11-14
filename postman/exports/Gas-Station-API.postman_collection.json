@@ -20,6 +20,18 @@
     {
       "key": "user_role",
       "value": "OWNER"
+    },
+    {
+      "key": "db_user_id",
+      "value": ""
+    },
+    {
+      "key": "shift_id",
+      "value": ""
+    },
+    {
+      "key": "shift_date",
+      "value": "2026-11-09"
     }
   ],
   "item": [
@@ -133,6 +145,11 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"password\": \"{{password}}\",\n  \"confirmPassword\": \"{{password}}\",\n  \"userRole\": \"{{user_role}}\"\n}",
@@ -141,11 +158,6 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
             }
           }
         },
@@ -170,6 +182,11 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{user_id}}-invalid-role\",\n  \"password\": \"{{password}}\",\n  \"confirmPassword\": \"{{password}}\",\n  \"userRole\": \"NOT_A_ROLE\"\n}",
@@ -178,11 +195,6 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
             }
           }
         },
@@ -197,7 +209,9 @@
                   "pm.test('returns 200 with userId', () => {",
                   "  pm.response.to.have.status(200);",
                   "  pm.expect(pm.response.json().data.userId).to.eql(pm.collectionVariables.get('user_id'));",
-                  "});"
+                  "});",
+                  "// Later requests use the numeric id as the shift owner.",
+                  "pm.collectionVariables.set('db_user_id', String(pm.response.json().data.id));"
                 ]
               }
             }
@@ -210,6 +224,11 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"password\": \"{{password}}\"\n}",
@@ -218,11 +237,6 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
             }
           }
         },
@@ -245,6 +259,11 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"password\": \"wrong-password\"\n}",
@@ -253,11 +272,577 @@
                   "language": "json"
                 }
               }
-            },
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shifts",
+      "item": [
+        {
+          "name": "Start shift",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 201 when a shift is opened, 200 when the user already had one open",
+                  "pm.test('opens or returns the open shift', () => pm.expect([200, 201]).to.include(pm.response.code));",
+                  "const shift = pm.response.json().data;",
+                  "pm.test('shift is open', () => pm.expect(shift.endTime).to.eql(null));",
+                  "pm.collectionVariables.set('shift_id', String(shift.id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/auth/login",
+              "raw": "{{base_url}}/shifts",
               "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
+              "path": ["shifts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{db_user_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Current shift",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 200', () => pm.response.to.have.status(200));",
+                  "pm.test('returns the open shift', () => pm.expect(pm.response.json().data.endTime).to.eql(null));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts/current?userId={{db_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "current"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{db_user_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List shifts - today",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 200 with a list', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts",
+              "host": ["{{base_url}}"],
+              "path": ["shifts"]
+            }
+          }
+        },
+        {
+          "name": "List shifts - cashiers today",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 200 with a list', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});",
+                  "pm.test('each shift carries its owner name', () => {",
+                  "  pm.response.json().data.forEach((shift) => pm.expect(shift.userName).to.be.a('string'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts?role=CASHIER",
+              "host": ["{{base_url}}"],
+              "path": ["shifts"],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "CASHIER"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List shifts - by date",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns 200 with a list', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts?role=CASHIER&date={{shift_date}}",
+              "host": ["{{base_url}}"],
+              "path": ["shifts"],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "CASHIER"
+                },
+                {
+                  "key": "date",
+                  "value": "{{shift_date}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List shifts - invalid role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts?role=NOT_A_ROLE",
+              "host": ["{{base_url}}"],
+              "path": ["shifts"],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "NOT_A_ROLE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get shift",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns the shift', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(String(pm.response.json().data.id)).to.eql(pm.collectionVariables.get('shift_id'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts/{{shift_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "{{shift_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get shift - not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('responds 404', () => pm.response.to.have.status(404));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts/2147483647",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "2147483647"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Credit Totals",
+      "item": [
+        {
+          "name": "Create credit totals",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(String(pm.response.json().data.shiftId)).to.eql(pm.collectionVariables.get('shift_id'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-totals",
+              "host": ["{{base_url}}"],
+              "path": ["credit-totals"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"creditTerminal\": 100.5,\n  \"creditTotal\": 100.5,\n  \"debitTerminal\": 45.25,\n  \"fleet\": 0,\n  \"svRedemption\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create credit totals - invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/credit-totals",
+              "host": ["{{base_url}}"],
+              "path": ["credit-totals"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Daily Summary Reports",
+      "item": [
+        {
+          "name": "Create daily summary report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('created', () => pm.response.to.have.status(201));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/daily-summary-reports",
+              "host": ["{{base_url}}"],
+              "path": ["daily-summary-reports"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"endDate\": \"2026-11-09T23:30:00.000Z\",\n  \"fuelSales\": 6000,\n  \"itemSales\": 3000,\n  \"gst\": 450,\n  \"hst\": 0,\n  \"pennyRounding\": -0.02,\n  \"totalSales\": 9449.98\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create daily summary report - invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/daily-summary-reports",
+              "host": ["{{base_url}}"],
+              "path": ["daily-summary-reports"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"endDate\": \"not-a-date\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payouts",
+      "item": [
+        {
+          "name": "Create payouts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('created', () => pm.response.to.have.status(201));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payouts",
+              "host": ["{{base_url}}"],
+              "path": ["payouts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"totalPos\": 1000,\n  \"lottoPayout\": 50,\n  \"vendorPayout\": 72.5,\n  \"ownerPayout\": 0,\n  \"miscPayout\": 0,\n  \"lottoWinner\": 25,\n  \"giftCertificates\": 0,\n  \"redemptions\": 0,\n  \"safedrops\": 200,\n  \"cashOnHand\": 577.3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create payouts - invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('rejects with 400', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payouts",
+              "host": ["{{base_url}}"],
+              "path": ["payouts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Close Shift",
+      "item": [
+        {
+          "name": "Close shift",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('closes the shift', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.endTime).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts/{{shift_id}}/close",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "{{shift_id}}", "close"]
+            }
+          }
+        },
+        {
+          "name": "Close shift - again (idempotent)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('succeeds and stays closed', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().data.endTime).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/shifts/{{shift_id}}/close",
+              "host": ["{{base_url}}"],
+              "path": ["shifts", "{{shift_id}}", "close"]
+            }
+          }
+        },
+        {
+          "name": "Create payouts - shift closed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rejects with 409 once the shift is closed', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payouts",
+              "host": ["{{base_url}}"],
+              "path": ["payouts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shiftId\": {{shift_id}},\n  \"userId\": {{db_user_id}},\n  \"totalPos\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }

@@ -1,0 +1,20 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/payouts'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": {{shift_id}},
+      "userId": {{db_user_id}},
+      "totalPos": 1
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 409 once the shift is closed', () => pm.response.to.have.status(409));

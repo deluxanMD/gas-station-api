@@ -1,14 +1,13 @@
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from '@/constants/database.constants';
 import { pool } from '@/config/database';
-import type { Shift } from '@/types/shift.types';
+import type {
+  Shift,
+  ShiftRow,
+  ShiftsForDayFilter,
+  ShiftWithUser,
+  ShiftWithUserRow,
+} from '@/types/shift.types';
 import { httpError } from '@/utils/httpError';
-
-interface ShiftRow {
-  id: number;
-  user_id: number;
-  start_time: Date;
-  end_time: Date | null;
-}
 
 const toShift = (row: ShiftRow): Shift => ({
   id: row.id,
@@ -72,6 +71,23 @@ export const closeShift = async (id: number): Promise<Shift> => {
   );
   if (rows[0]) return toShift(rows[0]);
   return getShiftById(id);
+};
+
+/** Shifts that started on the given day (default today), ended and in progress, oldest first. Narrowed to the owner's role when one is given. */
+export const getShiftsForDay = async ({ date, role }: ShiftsForDayFilter = {}): Promise<
+  ShiftWithUser[]
+> => {
+  const { rows } = await pool.query<ShiftWithUserRow>(
+    `SELECT s.id, s.user_id, s.start_time, s.end_time, u.user_id AS user_name
+     FROM shift s
+     JOIN users u ON u.id = s.user_id
+     WHERE ($1::varchar IS NULL OR u.user_role = $1)
+       AND s.start_time >= COALESCE($2::date, CURRENT_DATE)
+       AND s.start_time < COALESCE($2::date, CURRENT_DATE) + 1
+     ORDER BY s.start_time ASC, s.id ASC`,
+    [role ?? null, date ?? null],
+  );
+  return rows.map((row) => ({ ...toShift(row), userName: row.user_name }));
 };
 
 /** Throws 404 for an unknown shift and 409 for one that has already ended. */

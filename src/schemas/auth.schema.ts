@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ROLE_CODES } from '@/db/schema/roles';
+import { UserRole } from '@/constants/role.constants';
 import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -16,7 +16,7 @@ export const registerSchema = z
     userId: userIdSchema,
     password: passwordSchema,
     confirmPassword: z.string(),
-    userRole: z.enum(ROLE_CODES),
+    userRole: z.nativeEnum(UserRole),
     updatedAt: z.string().datetime({ offset: true }).nullish(),
     updatedBy: z.string().trim().min(1).max(UPDATED_BY_MAX_LENGTH).nullish(),
   })

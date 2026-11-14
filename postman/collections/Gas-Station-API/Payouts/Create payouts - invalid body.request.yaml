@@ -1,0 +1,18 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/payouts'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "shiftId": 0
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('rejects with 400', () => pm.response.to.have.status(400));
