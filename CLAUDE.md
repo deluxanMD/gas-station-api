@@ -56,6 +56,7 @@ postman/           # Postman collections/environments
 - Throw errors with `httpError(status, message)` (operational errors reach the client; anything else becomes a generic 500). Use `404` for unknown ids, `409` for state conflicts, `400` for validation. Never leak SQL or stack details to clients.
 - Request shapes and response shapes are consumed by the portal. A breaking change (rename, removal, new required field) needs the portal updated in the same piece of work.
 - Role codes and other values the frontend relies on are permanent identifiers; don't rename them.
+- Offline sync: write routes are mounted with `idempotency` (`Idempotency-Key` header: the first successful answer is stored per user and replayed on retry; a reused key with a different body is 422, a request still running is 503). A shift is started with a device-made `clientId` and optional `startTime`; `POST /shifts/:id/close` takes an optional `endTime`; records on a shift may send `shiftClientId` instead of `shiftId` and an optional `recordedAt`, which lets a late sync reach a shift closed after the record was made. Device times must be at most 5 minutes ahead and 30 days old (`constants/sync.constants.ts`).
 
 ## TypeScript
 

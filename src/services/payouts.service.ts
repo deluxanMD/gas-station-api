@@ -25,7 +25,7 @@ const toPayouts = (row: PayoutsRow): Payouts => ({
 });
 
 export const createPayouts = async (input: CreatePayoutsInput): Promise<Payouts> => {
-  await assertShiftOpen(input.shiftId);
+  await assertShiftOpen(input.shiftId, input.recordedAt);
   try {
     const { rows } = await pool.query<PayoutsRow>(
       `INSERT INTO payouts

@@ -24,7 +24,13 @@ import {
   scratchTicketReportTable,
 } from '@/db/schema/scratchTicket';
 import { rolesSeed, rolesTable } from '@/db/schema/roles';
-import { shiftOpenIndex, shiftTable } from '@/db/schema/shifts';
+import { idempotencyKeyCreatedIndex, idempotencyKeyTable } from '@/db/schema/idempotency';
+import {
+  shiftClientIdColumn,
+  shiftClientIdIndex,
+  shiftOpenIndex,
+  shiftTable,
+} from '@/db/schema/shifts';
 import { usersTable } from '@/db/schema/users';
 
 // Order matters: list parent tables before tables that reference them, seeds after their table.
@@ -34,6 +40,8 @@ export const schema: readonly string[] = [
   usersTable,
   shiftTable,
   shiftOpenIndex,
+  shiftClientIdColumn,
+  shiftClientIdIndex,
   creditTotalsTable,
   creditTotalsShiftIndex,
   dailySummaryReportTable,
@@ -56,4 +64,6 @@ export const schema: readonly string[] = [
   lottoReportSlipIndex,
   lottoReconciliationTable,
   lottoReconciliationShiftIndex,
+  idempotencyKeyTable,
+  idempotencyKeyCreatedIndex,
 ];

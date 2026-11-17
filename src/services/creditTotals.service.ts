@@ -17,7 +17,7 @@ const toCreditTotals = (row: CreditTotalsRow): CreditTotals => ({
 });
 
 export const createCreditTotals = async (input: CreateCreditTotalsInput): Promise<CreditTotals> => {
-  await assertShiftOpen(input.shiftId);
+  await assertShiftOpen(input.shiftId, input.recordedAt);
   try {
     const { rows } = await pool.query<CreditTotalsRow>(
       `INSERT INTO credit_totals

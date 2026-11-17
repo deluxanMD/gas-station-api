@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { clientTimestamp } from '@/schemas/clientTime.schema';
 import { LossAttribution } from '@/constants/lottoReconciliation.constants';
 
 // Whole cents.
@@ -8,6 +9,7 @@ const nonNegativeCents = cents.nonnegative();
 export const createLottoReconciliationSchema = z
   .object({
     shiftId: z.number().int().positive(),
+    recordedAt: clientTimestamp.optional(),
     userId: z.number().int().positive(),
     bullock: nonNegativeCents,
     bullPayouts: nonNegativeCents,

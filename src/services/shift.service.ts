@@ -2,6 +2,7 @@ import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from '@/constants/datab
 import { pool } from '@/config/database';
 import type {
   ConsolidatedRow,
+  CreateShiftInput,
   ConsolidatedShifts,
   Shift,
   ShiftRow,
@@ -13,12 +14,13 @@ import { httpError } from '@/utils/httpError';
 
 const toShift = (row: ShiftRow): Shift => ({
   id: row.id,
+  clientId: row.client_id,
   userId: row.user_id,
   startTime: row.start_time.toISOString(),
   endTime: row.end_time ? row.end_time.toISOString() : null,
 });
 
-const SHIFT_COLUMNS = 'id, user_id, start_time, end_time';
+const SHIFT_COLUMNS = 'id, client_id, user_id, start_time, end_time';
 
 const findOpenShift = async (userId: number): Promise<Shift | null> => {
   const { rows } = await pool.query<ShiftRow>(
@@ -28,25 +30,74 @@ const findOpenShift = async (userId: number): Promise<Shift | null> => {
   return rows[0] ? toShift(rows[0]) : null;
 };
 
-/** Creates a shift for the user unless they already have an open one (end_time IS NULL), which is returned instead. */
-export const createShift = async (userId: number): Promise<{ shift: Shift; created: boolean }> => {
+const findShiftByClientId = async (clientId: string): Promise<Shift | null> => {
+  const { rows } = await pool.query<ShiftRow>(
+    `SELECT ${SHIFT_COLUMNS} FROM shift WHERE client_id = $1`,
+    [clientId],
+  );
+  return rows[0] ? toShift(rows[0]) : null;
+};
+
+/** The id of the shift a device started under `clientId`, or 404. */
+export const getShiftIdByClientId = async (clientId: string): Promise<number> => {
+  const shift = await findShiftByClientId(clientId);
+  if (!shift) throw httpError(404, 'Shift not found');
+  return shift.id;
+};
+
+/**
+ * Creates a shift for the user unless they already have an open one (end_time IS NULL), which is returned instead.
+ * A repeated `clientId` returns the shift it created, so a retry never opens a second one. `startTime` is the instant
+ * the shift really began on the device (default: now).
+ */
+export const createShift = async ({
+  userId,
+  clientId,
+  startTime,
+}: CreateShiftInput): Promise<{ shift: Shift; created: boolean }> => {
+  if (clientId) {
+    const known = await findShiftByClientId(clientId);
+    if (known) {
+      if (known.userId !== userId) throw httpError(409, 'Client id belongs to another user');
+      return { shift: known, created: false };
+    }
+  }
+
   const existing = await findOpenShift(userId);
-  if (existing) return { shift: existing, created: false };
+  if (existing) return { shift: await adoptClientId(existing, clientId), created: false };
 
   try {
     const { rows } = await pool.query<ShiftRow>(
-      `INSERT INTO shift (user_id) VALUES ($1) RETURNING ${SHIFT_COLUMNS}`,
-      [userId],
+      `INSERT INTO shift (user_id, client_id, start_time)
+       VALUES ($1, $2, COALESCE($3::timestamptz, NOW()))
+       RETURNING ${SHIFT_COLUMNS}`,
+      [userId, clientId ?? null, startTime ?? null],
     );
     return { shift: toShift(rows[0]), created: true };
   } catch (error) {
     const code = (error as { code?: string }).code;
     if (code === PG_FOREIGN_KEY_VIOLATION) throw httpError(404, 'User not found');
     if (code === PG_UNIQUE_VIOLATION) {
-      // A concurrent request opened a shift between our check and insert.
-      const raced = await findOpenShift(userId);
+      // A concurrent request opened a shift (or used this client id) between our check and insert.
+      const byClientId = clientId ? await findShiftByClientId(clientId) : null;
+      const raced = byClientId ?? (await findOpenShift(userId));
       if (raced) return { shift: raced, created: false };
     }
+    throw error;
+  }
+};
+
+// The open shift was started without a client id (online); remember the device's id so a later retry maps to it.
+const adoptClientId = async (shift: Shift, clientId?: string): Promise<Shift> => {
+  if (!clientId || shift.clientId) return shift;
+  try {
+    const { rows } = await pool.query<ShiftRow>(
+      `UPDATE shift SET client_id = $2 WHERE id = $1 AND client_id IS NULL RETURNING ${SHIFT_COLUMNS}`,
+      [shift.id, clientId],
+    );
+    return rows[0] ? toShift(rows[0]) : shift;
+  } catch (error) {
+    if ((error as { code?: string }).code === PG_UNIQUE_VIOLATION) return shift;
     throw error;
   }
 };
@@ -63,16 +114,21 @@ export const getShiftById = async (id: number): Promise<Shift> => {
 export const getCurrentShift = async (userId: number): Promise<Shift | null> =>
   findOpenShift(userId);
 
-/** Ends the shift. Closing an already-closed shift succeeds and returns it unchanged, so retries are safe. */
-export const closeShift = async (id: number): Promise<Shift> => {
+/**
+ * Ends the shift at `endTime` (the instant it really ended on the device; default: now). Closing an already-closed
+ * shift succeeds and returns it unchanged, so retries are safe.
+ */
+export const closeShift = async (id: number, endTime?: string): Promise<Shift> => {
   const { rows } = await pool.query<ShiftRow>(
-    `UPDATE shift SET end_time = NOW(), updated_at = NOW()
-     WHERE id = $1 AND end_time IS NULL
+    `UPDATE shift SET end_time = COALESCE($2::timestamptz, NOW()), updated_at = NOW()
+     WHERE id = $1 AND end_time IS NULL AND COALESCE($2::timestamptz, NOW()) >= start_time
      RETURNING ${SHIFT_COLUMNS}`,
-    [id],
+    [id, endTime ?? null],
   );
   if (rows[0]) return toShift(rows[0]);
-  return getShiftById(id);
+  const shift = await getShiftById(id);
+  if (!shift.endTime) throw httpError(400, 'End time is before the shift started');
+  return shift;
 };
 
 /** Shifts that started on the given day (default today), ended and in progress, oldest first. Narrowed to the owner's role when one is given. */
@@ -185,8 +241,13 @@ export const consolidateShifts = async (shiftIds: number[]): Promise<Consolidate
   };
 };
 
-/** Throws 404 for an unknown shift and 409 for one that has already ended. */
-export const assertShiftOpen = async (id: number): Promise<void> => {
+/**
+ * Throws 404 for an unknown shift and 409 for one that has already ended. A record made on a device before the shift
+ * ended (`recordedAt`) is still accepted, because it may reach the server after the shift was closed.
+ */
+export const assertShiftOpen = async (id: number, recordedAt?: string): Promise<void> => {
   const shift = await getShiftById(id);
-  if (shift.endTime) throw httpError(409, 'Shift is already closed');
+  if (!shift.endTime) return;
+  if (recordedAt && Date.parse(recordedAt) <= Date.parse(shift.endTime)) return;
+  throw httpError(409, 'Shift is already closed');
 };

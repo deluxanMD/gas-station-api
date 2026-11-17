@@ -22,7 +22,7 @@ const toFuelDip = (row: FuelDipRow): FuelDip => ({
 });
 
 export const createFuelDip = async (input: CreateFuelDipInput): Promise<FuelDip> => {
-  await assertShiftOpen(input.shiftId);
+  await assertShiftOpen(input.shiftId, input.recordedAt);
   try {
     const { rows } = await pool.query<FuelDipRow>(
       `INSERT INTO fuel_dip

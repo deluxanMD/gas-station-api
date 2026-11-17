@@ -1,9 +1,18 @@
 import { UserRole } from '@/constants/role.constants';
 import { z } from 'zod';
+import { clientTimestamp } from '@/schemas/clientTime.schema';
 
 export const createShiftSchema = z.object({
   userId: z.number().int().positive(),
+  clientId: z.string().uuid().optional(),
+  startTime: clientTimestamp.optional(),
 });
+
+export const closeShiftBodySchema = z.object({
+  endTime: clientTimestamp.optional(),
+});
+
+export const shiftClientIdSchema = z.string().uuid();
 
 export const shiftIdParamSchema = z.object({
   id: z.coerce.number().int().positive(),

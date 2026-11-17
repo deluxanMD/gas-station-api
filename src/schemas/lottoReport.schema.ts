@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { clientTimestamp } from '@/schemas/clientTime.schema';
 import { LOTTO_AMOUNT_FIELDS, LottoSlipType } from '@/constants/lottoReport.constants';
 import type { LottoAmountField } from '@/types/lottoReport.types';
 
@@ -30,6 +31,7 @@ const slip = z.object({
 export const createLottoReportSchema = z
   .object({
     shiftId: z.number().int().positive(),
+    recordedAt: clientTimestamp.optional(),
     userId: z.number().int().positive(),
     slips: z.array(slip),
   })

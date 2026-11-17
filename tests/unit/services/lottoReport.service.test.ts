@@ -52,7 +52,7 @@ describe('createLottoReport', () => {
 
     const report = await createLottoReport(input);
 
-    expect(assertShiftOpen).toHaveBeenCalledWith(1);
+    expect(assertShiftOpen).toHaveBeenCalledWith(1, undefined);
     expect(report.id).toBe(7);
     expect(report.slips.map((s) => s.slipType)).toEqual(Object.values(LottoSlipType));
     expect(report.slips[0].amounts.onlineNetSales).toBe(100_000);

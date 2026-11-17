@@ -3,6 +3,7 @@ import type { RoleCode } from '@/db/schema/roles';
 export interface ShiftRow {
   id: number;
   user_id: number;
+  client_id: string | null;
   start_time: Date;
   end_time: Date | null;
 }
@@ -13,9 +14,17 @@ export interface ShiftWithUserRow extends ShiftRow {
 
 export interface Shift {
   id: number;
+  // Set by the device that started the shift; null for shifts started online before this existed.
+  clientId: string | null;
   userId: number;
   startTime: string;
   endTime: string | null;
+}
+
+export interface CreateShiftInput {
+  userId: number;
+  clientId?: string;
+  startTime?: string;
 }
 
 export interface ShiftsForDayFilter {

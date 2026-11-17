@@ -29,7 +29,7 @@ const toLottoReconciliation = (row: LottoReconciliationRow): LottoReconciliation
 export const createLottoReconciliation = async (
   input: CreateLottoReconciliationInput,
 ): Promise<LottoReconciliation> => {
-  await assertShiftOpen(input.shiftId);
+  await assertShiftOpen(input.shiftId, input.recordedAt);
   try {
     const { rows } = await pool.query<LottoReconciliationRow>(
       `INSERT INTO lotto_reconciliation

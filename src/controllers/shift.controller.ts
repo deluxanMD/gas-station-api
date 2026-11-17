@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import {
+  closeShiftBodySchema,
   consolidatedShiftsSchema,
   createShiftSchema,
   currentShiftQuerySchema,
@@ -21,7 +22,7 @@ export const create = async (req: Request, res: Response, next: NextFunction): P
     const parsed = createShiftSchema.safeParse(req.body);
     if (!parsed.success) throw validationError(parsed.error);
 
-    const { shift, created } = await createShift(parsed.data.userId);
+    const { shift, created } = await createShift(parsed.data);
     res.status(created ? 201 : 200).json({
       status: 'success',
       data: shift,
@@ -113,7 +114,10 @@ export const close = async (req: Request, res: Response, next: NextFunction): Pr
     const parsed = shiftIdParamSchema.safeParse(req.params);
     if (!parsed.success) throw validationError(parsed.error);
 
-    const shift = await closeShift(parsed.data.id);
+    const body = closeShiftBodySchema.safeParse(req.body ?? {});
+    if (!body.success) throw validationError(body.error);
+
+    const shift = await closeShift(parsed.data.id, body.data.endTime);
     res.status(200).json({
       status: 'success',
       data: shift,
