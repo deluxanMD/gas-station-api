@@ -1,0 +1,33 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/shifts'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Idempotency-Key
+    value: '{{idempotency_key}}'
+body:
+  type: json
+  content: |-
+    {
+      "userId": {{db_user_id}},
+      "clientId": "{{client_id}}",
+      "startTime": "{{start_time}}"
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      // A shift started offline: the device made the ids and recorded when it began.
+      pm.collectionVariables.set('client_id', crypto.randomUUID());
+      pm.collectionVariables.set('idempotency_key', crypto.randomUUID());
+      pm.collectionVariables.set('start_time', new Date(Date.now() - 3600 * 1000).toISOString());
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // 201 for a new shift, 200 if the user already has one open (it then takes this client id).
+      pm.test('returns the shift', () => {
+        pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+        pm.expect(pm.response.json().data.userId).to.eql(Number(pm.collectionVariables.get('db_user_id')));
+      });

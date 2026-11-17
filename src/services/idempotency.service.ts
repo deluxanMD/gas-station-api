@@ -64,3 +64,14 @@ export const completeIdempotentRequest = async (
 export const releaseIdempotentRequest = async (userId: string, key: string): Promise<void> => {
   await pool.query('DELETE FROM idempotency_key WHERE user_id = $1 AND key = $2', [userId, key]);
 };
+
+/** Removes stored answers past their retention and requests that never finished. Returns how many were deleted. */
+export const purgeExpiredIdempotencyKeys = async (): Promise<number> => {
+  const result = await pool.query(
+    `DELETE FROM idempotency_key
+     WHERE created_at < NOW() - make_interval(hours => $1)
+        OR (status_code IS NULL AND created_at < NOW() - make_interval(secs => $2))`,
+    [IDEMPOTENCY_RETENTION_HOURS, IDEMPOTENCY_STALE_IN_PROGRESS_SECONDS],
+  );
+  return result.rowCount ?? 0;
+};

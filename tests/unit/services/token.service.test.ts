@@ -29,6 +29,18 @@ describe('signAccessToken', () => {
   });
 });
 
+describe('user id claim', () => {
+  it('carries the database id when signed with one', () => {
+    const token = signAccessToken({ userId: 'alice', userRole: UserRole.Manager, id: 7 });
+
+    expect(verifyAccessToken(token)).toEqual({
+      userId: 'alice',
+      userRole: UserRole.Manager,
+      id: 7,
+    });
+  });
+});
+
 describe('verifyAccessToken', () => {
   it('returns the user id and role from a token it signed', () => {
     const token = signAccessToken({ userId: 'alice', userRole: UserRole.Manager });

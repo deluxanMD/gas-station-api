@@ -21,6 +21,43 @@ export interface Shift {
   endTime: string | null;
 }
 
+/** Which records a shift has, so a device can tell what is still missing. */
+export interface ShiftRecordFlags {
+  creditTotals: boolean;
+  dailySummary: boolean;
+  payouts: boolean;
+  fuel: boolean;
+  fuelDelivery: boolean;
+  fuelDip: boolean;
+  lottoReport: boolean;
+  lottoReconciliation: boolean;
+}
+
+export interface ShiftChange extends ShiftWithUser {
+  changedAt: string;
+  records: ShiftRecordFlags;
+}
+
+export interface ShiftChangeRow extends ShiftWithUserRow {
+  changed_at: Date;
+  has_credit_totals: boolean;
+  has_daily_summary: boolean;
+  has_payouts: boolean;
+  has_fuel: boolean;
+  has_fuel_delivery: boolean;
+  has_fuel_dip: boolean;
+  has_lotto_report: boolean;
+  has_lotto_reconciliation: boolean;
+}
+
+/** Shifts that changed after a point in time, and where to continue from. */
+export interface ShiftChanges {
+  // Pass this as `since` next time. When `hasMore` it is the point reached, otherwise just behind the server clock.
+  cursor: string;
+  hasMore: boolean;
+  shifts: ShiftChange[];
+}
+
 export interface CreateShiftInput {
   userId: number;
   clientId?: string;

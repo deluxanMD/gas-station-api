@@ -12,8 +12,8 @@ const getSecret = (): string => {
 const isRoleCode = (value: unknown): value is RoleCode =>
   typeof value === 'string' && (ROLE_CODES as string[]).includes(value);
 
-export const signAccessToken = ({ userId, userRole }: AuthenticatedUser): string =>
-  jwt.sign({ role: userRole }, getSecret(), {
+export const signAccessToken = ({ userId, userRole, id }: AuthenticatedUser): string =>
+  jwt.sign({ role: userRole, ...(id !== undefined && { uid: id }) }, getSecret(), {
     subject: userId,
     expiresIn: env.JWT_EXPIRES_IN as SignOptions['expiresIn'],
   });
@@ -33,5 +33,9 @@ export const verifyAccessToken = (token: string): AuthenticatedUser => {
     throw httpError(401, 'Invalid or expired token');
   }
 
-  return { userId: payload.sub, userRole: isRoleCode(payload.role) ? payload.role : null };
+  return {
+    userId: payload.sub,
+    userRole: isRoleCode(payload.role) ? payload.role : null,
+    ...(typeof payload.uid === 'number' && { id: payload.uid }),
+  };
 };

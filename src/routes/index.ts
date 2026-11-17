@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '@/middlewares/auth.middleware';
 import { idempotency } from '@/middlewares/idempotency.middleware';
+import { requireOwnUserId } from '@/middlewares/bodyUser.middleware';
 import { resolveShiftClientId } from '@/middlewares/shiftClientId.middleware';
 import authRouter from './auth.routes';
 import creditTotalsRouter from './creditTotals.routes';
@@ -14,11 +15,12 @@ import lottoReportRouter from './lottoReport.routes';
 import payoutsRouter from './payouts.routes';
 import scratchTicketRouter from './scratchTicket.routes';
 import shiftRouter from './shift.routes';
+import syncRouter from './sync.routes';
 
 const router = Router();
 
-// Authenticated writes can be retried safely when the client sends an Idempotency-Key.
-const secured = [requireAuth, idempotency];
+// Authenticated writes are attributed to the signed-in user and can be retried safely with an Idempotency-Key.
+const secured = [requireAuth, requireOwnUserId, idempotency];
 // Records that belong to a shift may name it by the client id its device gave it.
 const shiftRecord = [...secured, resolveShiftClientId];
 
@@ -35,5 +37,6 @@ router.use('/lotto-reconciliations', ...shiftRecord, lottoReconciliationRouter);
 router.use('/lotto-reports', ...shiftRecord, lottoReportRouter);
 router.use('/payouts', ...shiftRecord, payoutsRouter);
 router.use('/scratch-tickets', ...secured, scratchTicketRouter);
+router.use('/sync', ...secured, syncRouter);
 
 export default router;

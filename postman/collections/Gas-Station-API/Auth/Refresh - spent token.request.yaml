@@ -1,0 +1,19 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/auth/refresh'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "refreshToken": "{{refresh_token}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Run after Logout: the token was revoked, so it cannot be refreshed.
+      pm.test('returns 401', () => pm.response.to.have.status(401));

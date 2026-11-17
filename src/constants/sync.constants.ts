@@ -13,3 +13,10 @@ export const IDEMPOTENCY_IN_PROGRESS_RETRY_AFTER_SECONDS = 2;
 // Times recorded on a device while offline: the clock may be a little fast, and a queue can wait for days.
 export const CLIENT_TIME_MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
 export const CLIENT_TIME_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+// The pull cursor trails the database clock by this much, so a record committed just after a pull is still seen next time.
+export const SYNC_CURSOR_OVERLAP_SECONDS = 30;
+export const SYNC_CHANGES_MAX_SHIFTS = 500;
+
+// How often expired idempotency keys and refresh tokens are deleted.
+export const MAINTENANCE_INTERVAL_MS = 60 * 60 * 1000;

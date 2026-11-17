@@ -5,6 +5,7 @@ import {
   closeShift,
   consolidateShifts,
   createShift,
+  getShiftChanges,
   getShiftIdByClientId,
   getCurrentShift,
   getShiftsForDay,
@@ -22,6 +23,68 @@ const row = (endTime: Date | null): Record<string, unknown> => ({
   user_id: 7,
   start_time: new Date('2026-01-01T08:00:00.000Z'),
   end_time: endTime,
+});
+
+describe('getShiftChanges', () => {
+  const changeRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
+    ...row(null),
+    user_name: 'cashier1',
+    changed_at: new Date('2026-01-01T09:00:00.000Z'),
+    has_credit_totals: true,
+    has_daily_summary: false,
+    has_payouts: false,
+    has_fuel: false,
+    has_fuel_delivery: false,
+    has_fuel_dip: false,
+    has_lotto_report: false,
+    has_lotto_reconciliation: false,
+    ...overrides,
+  });
+
+  const respond = (changes: Record<string, unknown>[]): void => {
+    query.mockImplementation((sql: string) =>
+      sql.includes('AS cursor')
+        ? Promise.resolve({ rows: [{ cursor: new Date('2026-01-01T12:00:00.000Z') }] })
+        : Promise.resolve({ rows: changes }),
+    );
+  };
+
+  it('maps the shifts with which records they have and a cursor behind the server clock', async () => {
+    respond([changeRow()]);
+
+    const result = await getShiftChanges('2026-01-01T00:00:00.000Z');
+
+    expect(result.hasMore).toBe(false);
+    expect(result.cursor).toBe('2026-01-01T12:00:00.000Z');
+    expect(result.shifts[0]).toMatchObject({
+      id: 5,
+      userName: 'cashier1',
+      changedAt: '2026-01-01T09:00:00.000Z',
+      records: { creditTotals: true, payouts: false },
+    });
+  });
+
+  it('asks for one row more than the cap and passes since to SQL', async () => {
+    respond([]);
+
+    await getShiftChanges('2026-01-01T00:00:00.000Z');
+
+    const changesCall = query.mock.calls.find(([sql]) => !String(sql).includes('AS cursor'));
+    expect(changesCall?.[1]).toEqual(['2026-01-01T00:00:00.000Z', 501]);
+  });
+
+  it('truncates at the cap and continues from the last change returned', async () => {
+    const rows = Array.from({ length: 501 }, (_, i) =>
+      changeRow({ id: i + 1, changed_at: new Date(Date.UTC(2026, 0, 1, 0, 0, i)) }),
+    );
+    respond(rows);
+
+    const result = await getShiftChanges('2025-12-31T00:00:00.000Z');
+
+    expect(result.hasMore).toBe(true);
+    expect(result.shifts).toHaveLength(500);
+    expect(result.cursor).toBe(new Date(Date.UTC(2026, 0, 1, 0, 0, 499)).toISOString());
+  });
 });
 
 describe('Shift service', () => {

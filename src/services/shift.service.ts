@@ -1,10 +1,14 @@
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION } from '@/constants/database.constants';
 import { pool } from '@/config/database';
+import { SYNC_CHANGES_MAX_SHIFTS, SYNC_CURSOR_OVERLAP_SECONDS } from '@/constants/sync.constants';
 import type {
   ConsolidatedRow,
   CreateShiftInput,
   ConsolidatedShifts,
   Shift,
+  ShiftChange,
+  ShiftChangeRow,
+  ShiftChanges,
   ShiftRow,
   ShiftsForDayFilter,
   ShiftWithUser,
@@ -250,4 +254,70 @@ export const assertShiftOpen = async (id: number, recordedAt?: string): Promise<
   if (!shift.endTime) return;
   if (recordedAt && Date.parse(recordedAt) <= Date.parse(shift.endTime)) return;
   throw httpError(409, 'Shift is already closed');
+};
+
+const CHILD_TABLES = [
+  ['credit_totals', 'credit_totals'],
+  ['daily_summary', 'daily_summary_report'],
+  ['payouts', 'payouts'],
+  ['fuel', 'fuel'],
+  ['fuel_delivery', 'fuel_delivery'],
+  ['fuel_dip', 'fuel_dip'],
+  ['lotto_report', 'lotto_report'],
+  ['lotto_reconciliation', 'lotto_reconciliation'],
+] as const;
+
+// A shift changes when it starts, ends, or when any of its records is saved (including from another device).
+const CHANGES_SQL = `
+  WITH changed AS (
+    SELECT s.id, s.client_id, s.user_id, s.start_time, s.end_time, u.user_id AS user_name,
+           GREATEST(s.created_at, s.updated_at,
+             ${CHILD_TABLES.map(([, table]) => `(SELECT MAX(created_at) FROM ${table} WHERE shift_id = s.id)`).join(',\n             ')}
+           ) AS changed_at,
+           ${CHILD_TABLES.map(([flag, table]) => `EXISTS (SELECT 1 FROM ${table} WHERE shift_id = s.id) AS has_${flag}`).join(',\n           ')}
+    FROM shift s
+    JOIN users u ON u.id = s.user_id
+  )
+  SELECT * FROM changed
+  WHERE changed_at > $1::timestamptz
+  ORDER BY changed_at ASC, id ASC
+  LIMIT $2
+`;
+
+const toShiftChange = (row: ShiftChangeRow): ShiftChange => ({
+  ...toShift(row),
+  userName: row.user_name,
+  changedAt: row.changed_at.toISOString(),
+  records: {
+    creditTotals: row.has_credit_totals,
+    dailySummary: row.has_daily_summary,
+    payouts: row.has_payouts,
+    fuel: row.has_fuel,
+    fuelDelivery: row.has_fuel_delivery,
+    fuelDip: row.has_fuel_dip,
+    lottoReport: row.has_lotto_report,
+    lottoReconciliation: row.has_lotto_reconciliation,
+  },
+});
+
+/**
+ * Shifts that started, ended or received a record after `since`, oldest change first, for a device catching up after
+ * being offline. Poll again with the returned cursor; the overlap means a shift can be returned twice, so merge by id.
+ */
+export const getShiftChanges = async (since: string): Promise<ShiftChanges> => {
+  const [clock, changes] = await Promise.all([
+    pool.query<{ cursor: Date }>(`SELECT NOW() - make_interval(secs => $1) AS cursor`, [
+      SYNC_CURSOR_OVERLAP_SECONDS,
+    ]),
+    pool.query<ShiftChangeRow>(CHANGES_SQL, [since, SYNC_CHANGES_MAX_SHIFTS + 1]),
+  ]);
+
+  const hasMore = changes.rows.length > SYNC_CHANGES_MAX_SHIFTS;
+  const rows = hasMore ? changes.rows.slice(0, SYNC_CHANGES_MAX_SHIFTS) : changes.rows;
+  const last = rows[rows.length - 1];
+  return {
+    cursor: (hasMore && last ? last.changed_at : clock.rows[0].cursor).toISOString(),
+    hasMore,
+    shifts: rows.map(toShiftChange),
+  };
 };

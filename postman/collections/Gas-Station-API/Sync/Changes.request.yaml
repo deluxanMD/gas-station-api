@@ -1,0 +1,20 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/sync/changes?since={{since}}'
+order: 1000
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      // Everything from the last 24 hours.
+      pm.collectionVariables.set('since', new Date(Date.now() - 24 * 3600 * 1000).toISOString());
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('returns 200 with a cursor and the changed shifts', () => {
+        pm.response.to.have.status(200);
+        const data = pm.response.json().data;
+        pm.expect(data.cursor).to.be.a('string');
+        pm.expect(data.hasMore).to.be.a('boolean');
+        pm.expect(data.shifts).to.be.an('array');
+      });

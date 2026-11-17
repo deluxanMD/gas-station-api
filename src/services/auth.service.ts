@@ -35,3 +35,11 @@ export const verifyUser = async (userId: string, password: string): Promise<Logi
   if (!(await argon2.verify(row.password_hash, password))) return null;
   return { id: row.id, userId: row.user_id, userRole: row.user_role };
 };
+
+/** `users.id` for a login name (the token subject); null when the user no longer exists. */
+export const findDbUserId = async (userId: string): Promise<number | null> => {
+  const { rows } = await pool.query<{ id: number }>('SELECT id FROM users WHERE user_id = $1', [
+    userId,
+  ]);
+  return rows[0]?.id ?? null;
+};
