@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { clientTimestamp } from '@/schemas/clientTime.schema';
 
 // Volumes are litres to two decimals.
 const volume = z.number().finite().nonnegative().default(0);
@@ -6,6 +7,7 @@ const volume = z.number().finite().nonnegative().default(0);
 export const createFuelDeliverySchema = z
   .object({
     shiftId: z.number().int().positive(),
+    recordedAt: clientTimestamp.optional(),
     userId: z.number().int().positive(),
     deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
     bolNumber: z.string().trim().min(1).max(50),

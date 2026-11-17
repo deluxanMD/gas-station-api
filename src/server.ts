@@ -1,6 +1,7 @@
 import app from './app';
 import { env } from '@/config/env';
 import { connectDatabase, disconnectDatabase } from '@/config/database';
+import { startMaintenance } from '@/db/maintenance';
 import { logger } from '@/utils/logger';
 
 const server = app.listen(env.PORT, () => {
@@ -11,13 +12,20 @@ const server = app.listen(env.PORT, () => {
   });
 });
 
-connectDatabase().catch((error: Error) => {
-  logger.error('Database connection failed', { message: error.message });
-  process.exit(1);
-});
+let stopMaintenance: (() => void) | undefined;
+
+connectDatabase()
+  .then(() => {
+    if (env.DATABASE_URL) stopMaintenance = startMaintenance();
+  })
+  .catch((error: Error) => {
+    logger.error('Database connection failed', { message: error.message });
+    process.exit(1);
+  });
 
 const shutdown = (signal: string): void => {
   logger.info(`${signal} received — shutting down gracefully`);
+  stopMaintenance?.();
   server.close(() => {
     logger.info('Server closed');
     disconnectDatabase()

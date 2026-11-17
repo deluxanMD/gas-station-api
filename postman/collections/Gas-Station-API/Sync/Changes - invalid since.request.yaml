@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/sync/changes?since=yesterday'
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('returns 400', () => pm.response.to.have.status(400));

@@ -33,7 +33,7 @@ const toSlip = (row: LottoSlipRow): LottoSlip => ({
 
 /** Saves a report and its four slips together, so a report never exists without all of them. */
 export const createLottoReport = async (input: CreateLottoReportInput): Promise<LottoReport> => {
-  await assertShiftOpen(input.shiftId);
+  await assertShiftOpen(input.shiftId, input.recordedAt);
 
   const amountColumns = LOTTO_AMOUNT_FIELDS.map(({ column }) => column).join(', ');
   // $1 report id, $2 type, $3 date, $4 time, then one placeholder per amount.

@@ -42,7 +42,7 @@ describe('createFuelDip', () => {
     query.mockResolvedValue({ rows: [row] });
 
     await expect(createFuelDip(input)).resolves.toEqual({ id: 9, ...input });
-    expect(assertShiftOpen).toHaveBeenCalledWith(1);
+    expect(assertShiftOpen).toHaveBeenCalledWith(1, undefined);
     expect(query.mock.calls[0][1]).toEqual([1, 2, '2026-11-09T16:45:00.000Z', 1, 2, 3, 4, 5, 6]);
   });
 

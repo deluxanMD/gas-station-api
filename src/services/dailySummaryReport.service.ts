@@ -21,7 +21,7 @@ const toDailySummaryReport = (row: DailySummaryReportRow): DailySummaryReport =>
 export const createDailySummaryReport = async (
   input: CreateDailySummaryReportInput,
 ): Promise<DailySummaryReport> => {
-  await assertShiftOpen(input.shiftId);
+  await assertShiftOpen(input.shiftId, input.recordedAt);
   try {
     const { rows } = await pool.query<DailySummaryReportRow>(
       `INSERT INTO daily_summary_report

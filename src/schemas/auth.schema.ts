@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { UserRole } from '@/constants/role.constants';
 import {
+  REFRESH_TOKEN_MAX_LENGTH,
+  REFRESH_TOKEN_MIN_LENGTH,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   UPDATED_BY_MAX_LENGTH,
@@ -28,4 +30,8 @@ export const registerSchema = z
 export const loginSchema = z.object({
   userId: userIdSchema,
   password: z.string().min(1),
+});
+
+export const refreshSchema = z.object({
+  refreshToken: z.string().min(REFRESH_TOKEN_MIN_LENGTH).max(REFRESH_TOKEN_MAX_LENGTH),
 });

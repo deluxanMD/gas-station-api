@@ -24,3 +24,5 @@ scripts:
       pm.collectionVariables.set('access_token', pm.response.json().data.token);
       // Later requests use the numeric id as the shift owner.
       pm.collectionVariables.set('db_user_id', String(pm.response.json().data.id));
+      // Used by Refresh and Logout.
+      pm.collectionVariables.set('refresh_token', pm.response.json().data.refreshToken);

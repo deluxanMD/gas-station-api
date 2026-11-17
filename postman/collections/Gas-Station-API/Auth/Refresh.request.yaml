@@ -1,0 +1,26 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/auth/refresh'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "refreshToken": "{{refresh_token}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('returns 200 with a new access token and refresh token', () => {
+        pm.response.to.have.status(200);
+        const data = pm.response.json().data;
+        pm.expect(data.token).to.be.a('string');
+        pm.expect(data.refreshToken).to.not.eql(pm.collectionVariables.get('refresh_token'));
+      });
+      // The old refresh token is now spent; keep the new pair.
+      pm.collectionVariables.set('access_token', pm.response.json().data.token);
+      pm.collectionVariables.set('refresh_token', pm.response.json().data.refreshToken);

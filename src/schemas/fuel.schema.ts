@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { clientTimestamp } from '@/schemas/clientTime.schema';
 import { FuelType } from '@/constants/fuel.constants';
 
 // Volumes are litres and totals are dollars, both to two decimals.
@@ -7,6 +8,7 @@ const amount = z.number().finite().nonnegative().default(0);
 export const createFuelSchema = z
   .object({
     shiftId: z.number().int().positive(),
+    recordedAt: clientTimestamp.optional(),
     userId: z.number().int().positive(),
     biodieselVolume: amount,
     biodieselTotal: amount,

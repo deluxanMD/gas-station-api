@@ -8,3 +8,8 @@ export const UPDATED_BY_MAX_LENGTH = 50;
 export enum AuthScheme {
   Bearer = 'Bearer',
 }
+
+// Random bytes in an opaque refresh token (only its hash is stored).
+export const REFRESH_TOKEN_BYTES = 32;
+export const REFRESH_TOKEN_MIN_LENGTH = 20;
+export const REFRESH_TOKEN_MAX_LENGTH = 200;

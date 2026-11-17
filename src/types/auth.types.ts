@@ -11,11 +11,27 @@ export interface RegisterInput {
 export interface AuthenticatedUser {
   userId: string;
   userRole: RoleCode | null;
+  // `users.id`; absent from tokens issued before it was added.
+  id?: number;
 }
 
 /** A verified user plus their `users.id`, which other tables (e.g. shift) reference. */
 export interface LoginUser extends AuthenticatedUser {
   id: number;
+}
+
+export interface RefreshTokenRow {
+  id: number;
+  user_id: number;
+  expires_at: Date;
+  revoked_at: Date | null;
+}
+
+/** The answer to a sign-in or a refresh: both tokens plus who they belong to. */
+export interface SessionTokens {
+  token: string;
+  refreshToken: string;
+  user: LoginUser;
 }
 
 export interface UserRow {

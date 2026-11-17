@@ -60,7 +60,7 @@ describe('createLottoReconciliation', () => {
       total: 85_670,
       attribution: 'PREVIOUS_DAY',
     });
-    expect(assertShiftOpen).toHaveBeenCalledWith(1);
+    expect(assertShiftOpen).toHaveBeenCalledWith(1, undefined);
     expect(query.mock.calls[0][1]).toEqual([
       1,
       2,

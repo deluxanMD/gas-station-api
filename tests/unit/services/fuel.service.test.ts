@@ -50,7 +50,7 @@ describe('createFuel', () => {
     query.mockResolvedValue({ rows: [row] });
 
     await expect(createFuel(input)).resolves.toEqual({ id: 9, ...input });
-    expect(assertShiftOpen).toHaveBeenCalledWith(1);
+    expect(assertShiftOpen).toHaveBeenCalledWith(1, undefined);
     expect(query.mock.calls[0][1]).toEqual([1, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25]);
   });
 
